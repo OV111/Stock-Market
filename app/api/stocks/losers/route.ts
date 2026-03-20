@@ -34,7 +34,6 @@ export async function GET(): Promise<NextResponse> {
           return;
         }
         const request = await response.json();
-        console.log(request);
         return {
           symbol,
           price: request.c,
@@ -43,11 +42,11 @@ export async function GET(): Promise<NextResponse> {
         };
       }),
     );
-    const gainers = quotes
+    const losers = quotes
       .filter((q) => q != null && q.price !== 0 && q.changePercent != null)
-      .sort((a, b) => b?.changePercent - a?.changePercent)
+      .sort((a, b) => a?.changePercent - b?.changePercent)
       .slice(0, 8);
-    return NextResponse.json(gainers);
+    return NextResponse.json(losers);
   } catch (err) {
     console.log(err);
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });

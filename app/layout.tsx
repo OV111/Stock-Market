@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Stock Market",
-  description: "Track and analyze stock market data with our powerful tools and insights.",
+  description:
+    "Track and analyze stock market data with our powerful tools and insights.",
 };
 
 export default function RootLayout({
@@ -25,8 +21,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      > 
+        className={`${manrope.variable} font-[family-name:var(--font-manrope)] antialiased`}
+      >
         {children}
       </body>
     </html>

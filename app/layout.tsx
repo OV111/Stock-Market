@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
 });
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${manrope.variable} font-[family-name:var(--font-manrope)] antialiased`}
+        className={`${montserrat.variable} font-[family-name:var(--font-montserrat)] antialiased`}
       >
         {children}
       </body>

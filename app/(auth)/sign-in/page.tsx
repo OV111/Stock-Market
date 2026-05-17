@@ -15,6 +15,11 @@ const SignIn = () => {
     const onSubmit = async (data: SignInForm) => {
         console.log(data);
         // API call will go here
+        try {
+            // const request = await fetch('/api/auth')
+        } catch {
+
+        }
     };
 
     return (

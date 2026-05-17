@@ -2,6 +2,7 @@
 
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 type SignUpForm = {
@@ -11,6 +12,7 @@ type SignUpForm = {
 };
 
 const SignUp = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -20,6 +22,20 @@ const SignUp = () => {
   const onSubmit = async (data: SignUpForm) => {
     console.log(data);
     // API call will go here
+    try {
+      const request = await fetch("/api/auth/sign-up", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (request.ok) {
+        router.push("/sign-in");
+      }
+      console.log(request);
+    } catch {}
   };
 
   return (
@@ -75,14 +91,21 @@ const SignUp = () => {
             )}
           </div>
 
-          <button type="submit" disabled={isSubmitting} className="mt-2 w-full h-12 rounded-lg bg-[#3b82f6] hover:bg-blue-700 text-white font-medium text-base transition-colors disabled:opacity-50 cursor-pointer">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-2 w-full h-12 rounded-lg bg-[#3b82f6] hover:bg-blue-700 text-white font-medium text-base transition-colors disabled:opacity-50 cursor-pointer"
+          >
             {isSubmitting ? "Creating..." : "Create Account"}
           </button>
         </form>
 
         <p className="text-gray-500 text-sm mt-2 text-center">
           Already have an account?{" "}
-          <Link href="/sign-in" className="text-blue-500 hover:underline font-medium">
+          <Link
+            href="/sign-in"
+            className="text-blue-500 hover:underline font-medium"
+          >
             Sign in
           </Link>
         </p>

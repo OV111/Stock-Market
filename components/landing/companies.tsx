@@ -1,22 +1,33 @@
 import {
   SiApple,
   SiGoogle,
+  SiDogecoin,
   SiMeta,
   SiTesla,
   SiNvidia,
   SiSamsung,
   SiNetflix,
+  SiBitcoin,
   SiSpotify,
   SiUber,
   SiAirbnb,
   SiShopify,
   SiPaypal,
+  SiLitecoin,
   SiIntel,
   SiAmd,
   SiSalesforce,
   SiVisa,
+  SiMonero,
   SiMastercard,
   SiCisco,
+  SiEthereum,
+  SiRipple,
+  SiSolana,
+  SiPolkadot,
+  SiCardano,
+  SiBinance,
+  SiChainlink,
 } from "react-icons/si";
 import { FaAmazon } from "react-icons/fa";
 import { BiLogoAdobe } from "react-icons/bi";
@@ -24,16 +35,21 @@ import { BsMicrosoft } from "react-icons/bs";
 import { RiTwitterXFill } from "react-icons/ri";
 
 export const companies = [
+  { node: <SiBitcoin className="text-[#F7931A] w-8 h-8" />, title: "Bitcoin" },
+  { node: <SiPolkadot className="text-[#E6007A] w-8 h-8" />, title: "Polkadot" },
   { node: <SiApple className="text-white w-8 h-8" />, title: "Apple" },
   {
     node: <BsMicrosoft className="text-[#00A4EF] w-8 h-8" />,
     title: "Microsoft",
   },
   { node: <SiGoogle className="text-[#4285F4] w-8 h-8" />, title: "Google" },
+  { node: <SiRipple className="text-[#346AA9] w-8 h-8" />, title: "XRP" },
   { node: <FaAmazon className="text-[#FF9900] w-8 h-8" />, title: "Amazon" },
   { node: <SiMeta className="text-[#0082FB] w-8 h-8" />, title: "Meta" },
   { node: <SiTesla className="text-[#E82127] w-8 h-8" />, title: "Tesla" },
   { node: <SiNvidia className="text-[#76B900] w-8 h-8" />, title: "NVIDIA" },
+  { node: <SiSolana className="text-[#9945FF] w-8 h-8" />, title: "Solana" },
+  { node: <SiDogecoin className="text-[#C2A633] w-8 h-8" />, title: "Dogecoin" },
   { node: <SiSamsung className="text-[#1428A0] w-8 h-8" />, title: "Samsung" },
   { node: <SiNetflix className="text-[#E50914] w-8 h-8" />, title: "Netflix" },
   { node: <SiPaypal className="text-[#009CDE] w-8 h-8" />, title: "PayPal" },
@@ -42,6 +58,7 @@ export const companies = [
   { node: <SiAirbnb className="text-[#FF5A5F] w-8 h-8" />, title: "Airbnb" },
   { node: <SiIntel className="text-[#0071C5] w-8 h-8" />, title: "Intel" },
   { node: <SiShopify className="text-[#96BF48] w-8 h-8" />, title: "Shopify" },
+  { node: <SiEthereum className="text-[#627EEA] w-8 h-8" />, title: "Ethereum" },
   { node: <SiAmd className="text-[#ED1C24] w-8 h-8" />, title: "AMD" },
   {
     node: <SiSalesforce className="text-[#00A1E0] w-8 h-8" />,
@@ -52,4 +69,9 @@ export const companies = [
   { node: <SiVisa className="text-[#1A1F71] w-8 h-8" />, title: "Visa" },
   { node: <SiMastercard className="text-[#EB001B] w-8 h-8" />, title: "Mastercard" },
   { node: <SiCisco className="text-[#1BA0D7] w-8 h-8" />, title: "Cisco" },
+  { node: <SiBinance className="text-[#F3BA2F] w-8 h-8" />, title: "BNB" },
+  { node: <SiCardano className="text-[#0033AD] w-8 h-8" />, title: "Cardano" },
+  { node: <SiChainlink className="text-[#2A5ADA] w-8 h-8" />, title: "Chainlink" },
+  { node: <SiLitecoin className="text-[#BFBBBB] w-8 h-8" />, title: "Litecoin" },
+  { node: <SiMonero className="text-[#FF6600] w-8 h-8" />, title: "Monero" },
 ];

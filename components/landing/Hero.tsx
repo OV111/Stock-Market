@@ -12,6 +12,7 @@ import TrueFocus from "@/components/TrueFocus";
 import LogoLoop from "@/components/LogoLoop";
 import GradientText from "@/components/GradientText";
 import { companies } from "@/components/landing/companies";
+import DotField from "@/components/DotField";
 
 const CountUp = ({
   target,
@@ -40,8 +41,19 @@ const CountUp = ({
 
 const Hero = () => {
   return (
-    <section className="flex flex-col items-center text-center px-6 py-20 gap-0 min-h-screen">
-      <div className="flex flex-col items-center gap-3">
+    <section className="relative flex flex-col items-center text-center px-6 py-35 gap-0 min-h-screen overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <DotField
+          dotRadius={1.5}
+          dotSpacing={22}
+          bulgeStrength={80}
+          glowRadius={180}
+          gradientFrom="rgba(59, 130, 246, 0.25)"
+          gradientTo="rgba(96, 165, 250, 0.12)"
+          glowColor="#050505"
+        />
+      </div>
+      <div className="flex flex-col items-center gap-3">  
         <GradientText
           colors={["#ffffff", "#3b82f6", "#60a5fa", "#ffffff"]}
           animationSpeed={6}
@@ -50,7 +62,7 @@ const Hero = () => {
           Track Your Personal
         </GradientText>
         <TrueFocus
-          sentence="Stocks Portfolio Markets Watchlist"
+          sentence="Stocks Portfolio CryptoAssets Markets"
           borderColor="#3b82f6"
           glowColor="rgba(59, 130, 246, 0.4)"
           animationDuration={0.5}
@@ -79,9 +91,17 @@ const Hero = () => {
           </span>
           <span className="text-gray-400">Data Points Daily</span>
         </div>
+        
+        <div className="w-px h-10 bg-white/10" />
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-gray-100 font-bold text-2xl">
+            <CountUp target={200} />
+          </span>
+          <span className="text-gray-400">Crypto Assets</span>
+        </div>
       </div>
 
-      <div className="w-full mt-auto">
+      <div className="w-full mt-auto pt-46">
         <LogoLoop
           logos={companies}
           speed={80}

@@ -11,7 +11,7 @@ const LandingNav = () => {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 py-2 overflow-hidden">
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 pt-2 overflow-hidden">
       <div className="absolute inset-0 -z-10">
         <DotField
           dotRadius={1}
@@ -35,9 +35,9 @@ const LandingNav = () => {
             {hovered ? (
               <motion.span
                 key="down"
-                initial={{ opacity: 0, y: -6, rotate: -10 }}
+                initial={{ opacity: 0, y: -5, rotate: -10 }}
                 animate={{ opacity: 1, y: 0, rotate: 0 }}
-                exit={{ opacity: 0, y: 6 }}
+                exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0"
               >
@@ -46,9 +46,9 @@ const LandingNav = () => {
             ) : (
               <motion.span
                 key="up"
-                initial={{ opacity: 0, y: 6, rotate: 10 }}
+                initial={{ opacity: 0, y: 5, rotate: 10 }}
                 animate={{ opacity: 1, y: 0, rotate: 0 }}
-                exit={{ opacity: 0, y: -6 }}
+                exit={{ opacity: 0, y: -5 }}
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0"
               >

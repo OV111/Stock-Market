@@ -1,4 +1,4 @@
-import { TrendingUp, Star, Newspaper } from "lucide-react";
+import { TrendingUp, Star, Newspaper, Bitcoin } from "lucide-react";
 
 const items = [
   {
@@ -22,6 +22,13 @@ const items = [
     description:
       "Stay informed with the latest financial news and insights, filtered by the stocks you follow.",
   },
+  {
+    icon: <Bitcoin className="w-6 h-6 text-orange-400" />,
+    iconBg: "bg-orange-500/10",
+    title: "Crypto Markets",
+    description:
+      "Track Bitcoin, Ethereum, and top altcoins alongside your stocks — all in one unified dashboard.",
+  },
 ];
 
 const Summary = () => {
@@ -37,7 +44,7 @@ const Summary = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {items.map((item) => (
           <div
             key={item.title}

@@ -32,11 +32,15 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jose": "^6.2.3",
+    "nodemailer": "^8.0.7",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

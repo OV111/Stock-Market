@@ -41,15 +41,15 @@ const CountUp = ({
 
 const Hero = () => {
   return (
-    <section className="relative flex flex-col items-center text-center px-6 py-35 gap-0 min-h-screen overflow-hidden">
+    <section className="relative flex flex-col items-center text-center px-6 py-46 gap-0 min-h-screen overflow-hidden">
       <div className="absolute inset-0 -z-10">
         <DotField
           dotRadius={1.5}
           dotSpacing={22}
           bulgeStrength={80}
           glowRadius={180}
-          gradientFrom="rgba(59, 130, 246, 0.25)"
-          gradientTo="rgba(96, 165, 250, 0.12)"
+          gradientFrom="rgba(59, 130, 246, 0.4)"
+          gradientTo="rgba(59, 130, 246, 0.18)"
           glowColor="#050505"
         />
       </div>
@@ -101,7 +101,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className="w-full mt-auto pt-46">
+      <div className="absolute bottom-0 left-0 w-full pb-8">
         <LogoLoop
           logos={companies}
           speed={80}

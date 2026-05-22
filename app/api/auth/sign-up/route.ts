@@ -4,11 +4,26 @@ import User from "@/models/User";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  await connectDB();
-  const { name, email, password } = await request.json();
-  const hashedPassword = await bcrypt.hash(password, 13);
-  const user = new User({ name, email, password: hashedPassword });
-  user.save();
+  try {
+    await connectDB();
+    const { name, email, password } = await request.json();
 
-  return NextResponse.json({ message: "User Created" }, { status: 201 });
+    if (!name || !email || !password) {
+      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+    }
+
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return NextResponse.json({ message: "Email already in use" }, { status: 409 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    return NextResponse.json({ message: "Account created" }, { status: 201 });
+  } catch (err) {
+    console.error("[sign-up]", err);
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  }
 }

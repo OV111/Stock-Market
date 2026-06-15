@@ -108,7 +108,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-gray-500 text-xs">
-            © {new Date().getFullYear()} Stoxly. All rights reserved.
+            © 2025 Stoxly. All rights reserved.
           </p>
           <p className="text-gray-600 text-xs">
             Market data provided by{" "}

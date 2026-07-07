@@ -88,24 +88,25 @@ const Features = () => {
           {loading ? (
             <StockSkeleton />
           ) : (
-            <div className="flex flex-col gap-3">
-              {gainers.map((stock) => (
-                <div className="flex justify-between" key={stock.symbol}>
-                  <span className="text-green-400 font-medium">
-                    {stock.symbol}
-                  </span>
-                  <span className="text-gray-400">
-                    ${stock.price.toFixed(2)}
-                  </span>
-                  <span className="text-green-400">
-                    +${stock.change.toFixed(2)}
-                  </span>
-                  <span className="text-green-400">
-                    +{stock.changePercent.toFixed(2)}%
-                  </span>
-                </div>
-              ))}
-            </div>
+            <div></div>
+            // <div className="flex flex-col gap-3">
+            //   {gainers?.map((stock) => (
+            //     <div className="flex justify-between" key={stock.symbol}>
+            //       <span className="text-green-400 font-medium">
+            //         {stock.symbol}
+            //       </span>
+            //       <span className="text-gray-400">
+            //         ${stock.price.toFixed(2)}
+            //       </span>
+            //       <span className="text-green-400">
+            //         +${stock.change.toFixed(2)}
+            //       </span>
+            //       <span className="text-green-400">
+            //         +{stock.changePercent.toFixed(2)}%
+            //       </span>
+            //     </div>
+            //   ))}
+            // </div>
           )}
         </div>
 
@@ -120,7 +121,7 @@ const Features = () => {
               <p className="text-gray-500 text-xs">Worst performing today</p>
             </div>
           </div>
-          {loading ? (
+          {/* {loading ? (
             <StockSkeleton />
           ) : (
             <div className="flex flex-col gap-3">
@@ -141,11 +142,11 @@ const Features = () => {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
         </div>
       </div>
       {/* Market Stats Bar */}
-      <div className="mx-0 mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* <div className="mx-0 mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
         {statsLoading
           ? Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-20 w-full rounded-xl" />
@@ -183,7 +184,7 @@ const Features = () => {
                 </div>
               );
             })}
-      </div>
+      </div> */}
     </section>
   );
 };

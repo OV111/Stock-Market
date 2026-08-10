@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { TrendingUp, TrendingDown, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "motion/react";
-import process from "process";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type SignInForm = {
   email: string;
@@ -62,25 +59,22 @@ const SignInForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState("");
+  const [serverError, setServerError] = useState(() => {
+    const error = searchParams.get("error");
+    if (error === "google_cancelled") return "Google sign-in was cancelled.";
+    if (error === "google_failed") return "Google sign-in failed. Please try again.";
+    return "";
+  });
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SignInForm>();
 
-  useEffect(() => {
-    const error = searchParams.get("error");
-    if (error === "google_cancelled")
-      setServerError("Google sign-in was cancelled.");
-    if (error === "google_failed")
-      setServerError("Google sign-in failed. Please try again.");
-  }, [searchParams]);
-
   const onSubmit = async (data: SignInForm) => {
     setServerError("");
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/sign-in`, {
+      const res = await fetch(`/api/auth/sign-in`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data),
@@ -90,7 +84,7 @@ const SignInForm = () => {
         setServerError(json.message);
         return;
       }
-      router.push("/root");
+      router.push("/");
     } catch {
       setServerError("Something went wrong. Please try again.");
     }
@@ -181,7 +175,7 @@ const SignInForm = () => {
       </div>
 
       <a
-        href={`${API_BASE_URL}/api/auth/google`}
+        href="/api/auth/google"
         className="flex items-center justify-center gap-3 h-11 rounded-lg border border-gray-600 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium transition-colors"
       >
         <svg className="size-5" viewBox="0 0 24 24">

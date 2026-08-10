@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       path: "/",
     });
 
-    return NextResponse.redirect(new URL("/root", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   } catch {
     return NextResponse.redirect(new URL("/sign-in?error=google_failed", request.url));
   }

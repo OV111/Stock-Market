@@ -6,9 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "motion/react";
-import process from "process";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type SignUpForm = {
   name: string;
@@ -54,7 +51,7 @@ const SignUp = () => {
   const onSubmit = async (data: SignUpForm) => {
     setServerError("");
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/sign-up`, {
+      const res = await fetch(`/api/auth/sign-up`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data),
@@ -64,7 +61,7 @@ const SignUp = () => {
         setServerError(json.message);
         return;
       }
-      router.push("/sign-in");
+      router.push("/");
     } catch {
       setServerError("Something went wrong. Please try again.");
     }
@@ -176,7 +173,7 @@ const SignUp = () => {
           </div>
 
           <a
-             href={`${API_BASE_URL}/api/auth/google`}
+            href="/api/auth/google"
             className="flex items-center justify-center gap-3 h-11 rounded-lg border border-gray-600 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium transition-colors"
           >
             <svg className="size-5" viewBox="0 0 24 24">

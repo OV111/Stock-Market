@@ -4,8 +4,9 @@ export type NavbarItem = {
 };
 
 export const navbarItems: NavbarItem[] = [
-  { label: "Dashboard", href: "/root" },
-  { label: "Search", href: "/root/search" },
-  { label: "Watchlist", href: "/root/watchlist" },
-  { label: "Crypto", href: "/root/crypto" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Search", href: "/search" },
+  { label: "Watchlist", href: "/watchlist" },
+  { label: "Crypto", href: "/crypto" },
+  { label: "News", href: "/news" },
 ];

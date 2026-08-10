@@ -3,7 +3,7 @@ import { jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
   if (!token) {
@@ -21,5 +21,14 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/root/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/search/:path*",
+    "/crypto/:path*",
+    "/stock/:path*",
+    "/alerts/:path*",
+    "/news/:path*",
+    "/profile/:path*",
+    "/settings/:path*",
+  ],
 };

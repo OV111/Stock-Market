@@ -66,16 +66,16 @@ const Footer = () => {
             <h4 className="text-gray-400 font-semibold text-sm uppercase tracking-wider">
               Product
             </h4>
-            <Link href="/root" className="footer-link text-sm">
+            <Link href="/dashboard" className="footer-link text-sm">
               Dashboard
             </Link>
-            <Link href="/root/search" className="footer-link text-sm">
+            <Link href="/search" className="footer-link text-sm">
               Search Stocks
             </Link>
-            <Link href="/root/watchlist" className="footer-link text-sm">
+            <Link href="/watchlist" className="footer-link text-sm">
               Watchlist
             </Link>
-            <Link href="/root/news" className="footer-link text-sm">
+            <Link href="/news" className="footer-link text-sm">
               Market News
             </Link>
           </div>
@@ -85,10 +85,10 @@ const Footer = () => {
             <h4 className="text-gray-400 font-semibold text-sm uppercase tracking-wider">
               Markets
             </h4>
-            <Link href="/root" className="footer-link text-sm">NASDAQ</Link>
-            <Link href="/root" className="footer-link text-sm">NYSE</Link>
-            <Link href="/root" className="footer-link text-sm">S&P 500</Link>
-            <Link href="/root/crypto" className="footer-link text-sm">Crypto</Link>
+            <Link href="/dashboard" className="footer-link text-sm">NASDAQ</Link>
+            <Link href="/dashboard" className="footer-link text-sm">NYSE</Link>
+            <Link href="/dashboard" className="footer-link text-sm">S&P 500</Link>
+            <Link href="/crypto" className="footer-link text-sm">Crypto</Link>
           </div>
 
           {/* Account */}

@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import DotField from "@/components/DotField";
+import UserMenu from "@/components/ui/UserMenu";
+import { navbarItems } from "@/lib/constants";
+import type { CurrentUser } from "@/lib/getCurrentUser";
 
-const LandingNav = () => {
+const LandingNav = ({ user }: { user: CurrentUser | null }) => {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 pt-2 overflow-hidden">
-      <div className="absolute inset-0 -z-10">
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 pt-2">
+      <div className="absolute inset-0 -z-10 overflow-hidden">
         <DotField
           dotRadius={1}
           dotSpacing={18}
@@ -62,16 +65,36 @@ const LandingNav = () => {
       </Link>
 
       <div className="flex items-center gap-3">
-        <Link href="/sign-in">
-          <Button variant="ghost" size="lg" className="cursor-pointer">
-            Sign In
-          </Button>
-        </Link>
-        <Link href="/sign-up">
-          <Button size="lg" className="cursor-pointer">
-            Get Started
-          </Button>
-        </Link>
+        {user ? (
+          <>
+            <ul className="flex items-center gap-4 mr-2">
+              {navbarItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-gray-300 hover:text-white transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <UserMenu name={user.name} email={user.email} />
+          </>
+        ) : (
+          <>
+            <Link href="/sign-in">
+              <Button variant="ghost" size="lg" className="cursor-pointer">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/sign-up">
+              <Button size="lg" className="cursor-pointer">
+                Get Started
+              </Button>
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );

@@ -1,44 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp, TrendingDown, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
+import { Logo } from "@/components/ui/Logo";
 
 type SignUpForm = {
   name: string;
   email: string;
   password: string;
   confirm: string;
-};
-
-const Logo = () => {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Link
-      href="/"
-      className="flex items-center gap-2 w-fit"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="relative size-6">
-        <AnimatePresence mode="wait">
-          {hovered ? (
-            <motion.span key="down" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }} transition={{ duration: 0.2 }} className="absolute inset-0">
-              <TrendingDown className="text-red-500 size-6" />
-            </motion.span>
-          ) : (
-            <motion.span key="up" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.2 }} className="absolute inset-0">
-              <TrendingUp className="text-[#3b82f6] size-6" />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-       <p className="text-xl font-bold">Stoxly</p>
-    </Link>
-  );
 };
 
 const SignUp = () => {
@@ -69,7 +43,7 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col px-6 py-3">
-      <Logo />
+      <Logo iconSize="size-6" />
 
       <div className="flex-1 flex items-center justify-center py-8">
         <motion.div

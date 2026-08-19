@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { TrendingUp, TrendingDown, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
+import { Logo } from "@/components/ui/Logo";
 
 type SignInForm = {
   email: string;
@@ -14,47 +15,6 @@ type SignInForm = {
 
 type ApiError = { message: string };
 
-const Logo = () => {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Link
-      href="/"
-      className="flex items-center gap-2"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="relative size-6">
-        <AnimatePresence mode="wait">
-          {hovered ? (
-            <motion.span
-              key="down"
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0"
-            >
-              <TrendingDown className="text-red-500 size-5" />
-            </motion.span>
-          ) : (
-            <motion.span
-              key="up"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0"
-            >
-              <TrendingUp className="text-[#3b82f6] size-5" />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-      <p className="text-xl font-bold">Stoxly</p>
-    </Link>
-  );
-};
-
 const SignInForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,7 +22,8 @@ const SignInForm = () => {
   const [serverError, setServerError] = useState(() => {
     const error = searchParams.get("error");
     if (error === "google_cancelled") return "Google sign-in was cancelled.";
-    if (error === "google_failed") return "Google sign-in failed. Please try again.";
+    if (error === "google_failed")
+      return "Google sign-in failed. Please try again.";
     return "";
   });
   const {
@@ -212,15 +173,15 @@ const SignInForm = () => {
   );
 };
 
-const SignIn = () => (
-  <div className="min-h-screen bg-gray-900 flex flex-col px-6 py-3">
-    <Logo />
-    <div className="flex-1 flex items-center justify-center py-8">
-      <Suspense fallback={null}>
-        <SignInForm />
-      </Suspense>
+export default function SignIn() {
+  return (
+    <div className="min-h-screen bg-gray-900 flex flex-col px-6 py-3">
+      <Logo />
+      <div className="flex-1 flex items-center justify-center py-8">
+        <Suspense fallback={null}>
+          <SignInForm />
+        </Suspense>
+      </div>
     </div>
-  </div>
-);
-
-export default SignIn;
+  );
+}

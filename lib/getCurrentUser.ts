@@ -7,6 +7,9 @@ export type CurrentUser = {
   id: string;
   name: string;
   email: string;
+  hasPassword: boolean;
+  isGoogleLinked: boolean;
+  createdAt: Date;
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -19,7 +22,14 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const user = await User.findById(payload.id);
     if (!user) return null;
 
-    return { id: user._id.toString(), name: user.name, email: user.email };
+    return {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      hasPassword: !!user.password,
+      isGoogleLinked: !!user.googleId,
+      createdAt: user.createdAt,
+    };
   } catch {
     return null;
   }

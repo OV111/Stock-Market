@@ -1,10 +1,21 @@
-import MarketMovers from "@/components/dashboard/MarketMovers";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import PortfolioPanel from "@/components/dashboard/PortfolioPanel";
+import WatchlistPanel from "@/components/dashboard/WatchlistPanel";
+import MoversPanel from "@/components/dashboard/MoversPanel";
+import NewsPanel from "@/components/dashboard/NewsPanel";
 
 const Dashboard = () => {
   return (
-    <div className="min-h-screen home-wrapper px-4 py-8 md:px-8">
-      <MarketMovers />
+    <div className="min-h-screen bg-black px-4 py-8 md:px-8">
+      <DashboardHeader />
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
+        <PortfolioPanel />
+        <WatchlistPanel />
+        <MoversPanel />
+        <NewsPanel />
+      </div>
     </div>
   );
 };
+
 export default Dashboard;

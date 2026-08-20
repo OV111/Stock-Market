@@ -14,7 +14,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 pt-2">
+    <nav className="sticky top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 pt-2">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <DotField
           dotRadius={1}

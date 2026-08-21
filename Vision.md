@@ -112,6 +112,29 @@ Streaming summaries are table stakes in 2026. What isn't:
 
 ---
 
+## The Idea — AI-Powered Portfolio Debrief
+
+Once a week (or on demand), Stoxly generates a **personal portfolio debrief** — not a market summary, not a news feed, but a structured audit of *your* portfolio using *your* actual transaction data and risk metrics.
+
+It answers three questions a generic dashboard never does:
+
+- **What actually drove your returns this week?** — not "markets were up," but "87% of your gain came from NVDA, which now makes up 34% of your portfolio — your concentration risk increased."
+- **Where is your portfolio lying to you?** — assets that feel diversified but are 0.9 correlated, a position sized as a small bet that's quietly become your largest holding.
+- **What does the math say you did well or poorly?** — TWR vs MWR delta explained in plain language: "you timed your AAPL deposit well, it added 2.1% to your money-weighted return above the strategy return."
+
+**Why this is the right idea for Stoxly specifically:**
+
+- It's only possible because the ledger and risk analytics are correct underneath — a fake tracker can't generate this, which is the whole point of the moat
+- The AI layer stays grounded — every sentence traces to a tool call result, no hallucinated numbers, which is exactly the architecture this doc already mandates
+- It's a feature a real user actually wants, not a demo gimmick
+- It fits the build sequence — it's last, after the math is solid, which is where it belongs
+
+**What it is not:** a market prediction, a "buy/sell" recommendation, or a sentiment scraper. Entirely backward-looking, entirely grounded in the user's own data.
+
+This is the feature that makes Stoxly a product, not a portfolio piece that happens to have a dashboard.
+
+---
+
 ## What It Is Not
 
 - Not a brokerage — no trade execution

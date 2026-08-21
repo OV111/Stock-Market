@@ -41,12 +41,7 @@ const CountUp = ({
 const Hero = () => {
   return (
     <section className="relative flex flex-col items-center text-center px-6 h-[calc(100dvh-4rem)] overflow-hidden">
-      {/* Backdrop lives in app/(root)/page.tsx so it spans the navbar too. */}
-
-      {/* flex-1 soaks up all leftover height and centers the copy, which
-          leaves the logo strip below sitting on the viewport bottom edge
-          at every screen size — no absolute positioning needed. */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 sm:gap-10 min-h-0">
+      <div className="flex flex-1 pb-20 flex-col items-center justify-center gap-8 sm:gap-10 min-h-0">
         <div className="flex flex-col items-center gap-3">
           <GradientText
             colors={["#ffffff", "#3b82f6", "#60a5fa", "#ffffff"]}
@@ -96,7 +91,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className="w-full shrink-0 pb-6 sm:pb-8">
+      <div className="w-full shrink-0 pb-2 sm:pb-2">
         <LogoLoop
           logos={companies}
           speed={80}

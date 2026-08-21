@@ -63,19 +63,19 @@ const Features = () => {
   }, []);
 
   return (
-    <section className="container py-10">
-      <div className="text-center mb-10">
-        <h2 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-white via-blue-400 to-blue-600 bg-clip-text text-transparent">
+    <section className="container py-10 sm:py-14">
+      <div className="text-center mb-8 sm:mb-10">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-white via-blue-400 to-blue-600 bg-clip-text text-transparent">
           Today&apos;s Market Movers
         </h2>
-        <p className="text-gray-500 text-base max-w-xl mx-auto">
+        <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
           Stay ahead with live top gainers, losers, and key market index
           performance updated in real time.
         </p>
       </div>
-      <div className="flex justify-center items-center gap-4 mx-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Top Gainers */}
-        <div className="h-100 w-full rounded-xl border border-gray-800 p-4">
+        <div className="min-h-64 md:h-100 w-full rounded-xl border border-gray-800 p-4">
           <div className="flex items-center gap-3 mb-4 border-b border-gray-800 pb-3">
             <div className="flex items-center justify-center bg-green-500/10 rounded-lg p-2">
               <ChartNoAxesCombined className="text-green-400 size-4" />
@@ -111,7 +111,7 @@ const Features = () => {
         </div>
 
         {/* Top Losers */}
-        <div className="h-100 w-full rounded-xl border border-gray-800 p-4">
+        <div className="min-h-64 md:h-100 w-full rounded-xl border border-gray-800 p-4">
           <div className="flex items-center gap-3 mb-4 border-b border-gray-800 pb-3">
             <div className="flex items-center justify-center bg-red-500/10 rounded-lg p-2">
               <ArrowDownNarrowWide className="text-red-400 size-4" />

@@ -12,7 +12,6 @@ import TrueFocus from "@/components/TrueFocus";
 import LogoLoop from "@/components/LogoLoop";
 import GradientText from "@/components/GradientText";
 import { companies } from "@/components/landing/companies";
-import DotField from "@/components/DotField";
 
 const CountUp = ({
   target,
@@ -41,67 +40,63 @@ const CountUp = ({
 
 const Hero = () => {
   return (
-    <section className="relative flex flex-col items-center text-center px-6 py-46 gap-0 min-h-screen overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <DotField
-          dotRadius={1.5}
-          dotSpacing={22}
-          bulgeStrength={80}
-          glowRadius={180}
-          gradientFrom="rgba(59, 130, 246, 0.4)"
-          gradientTo="rgba(59, 130, 246, 0.18)"
-          glowColor="#050505"
-        />
-      </div>
-      <div className="flex flex-col items-center gap-3">  
-        <GradientText
-          colors={["#ffffff", "#3b82f6", "#60a5fa", "#ffffff"]}
-          animationSpeed={6}
-          className="text-[78px] font-bold w-full"
-        >
-          Track Your Personal
-        </GradientText>
-        <TrueFocus
-          sentence="Stocks Portfolio CryptoAssets Markets"
-          borderColor="#3b82f6"
-          glowColor="rgba(59, 130, 246, 0.4)"
-          animationDuration={0.5}
-          pauseBetweenAnimations={1.5}
-          textClassName="bg-gradient-to-br from-blue-100 via-blue-400 to-blue-600 bg-clip-text text-transparent"
-        />
-      </div>
-      <div className="flex items-center gap-8 text-sm mt-10">
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-gray-100 font-bold text-2xl">
-            <CountUp target={500} />
-          </span>
-          <span className="text-gray-400">Stocks Tracked</span>
+    <section className="relative flex flex-col items-center text-center px-6 h-[calc(100dvh-4rem)] overflow-hidden">
+      {/* Backdrop lives in app/(root)/page.tsx so it spans the navbar too. */}
+
+      {/* flex-1 soaks up all leftover height and centers the copy, which
+          leaves the logo strip below sitting on the viewport bottom edge
+          at every screen size — no absolute positioning needed. */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 sm:gap-10 min-h-0">
+        <div className="flex flex-col items-center gap-3">
+          <GradientText
+            colors={["#ffffff", "#3b82f6", "#60a5fa", "#ffffff"]}
+            animationSpeed={6}
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-[78px] font-bold w-full"
+          >
+            Track Your Personal
+          </GradientText>
+          <TrueFocus
+            sentence="Stocks Portfolio CryptoAssets Markets"
+            borderColor="#3b82f6"
+            glowColor="rgba(59, 130, 246, 0.4)"
+            animationDuration={0.5}
+            pauseBetweenAnimations={1.5}
+            textClassName="bg-gradient-to-br from-blue-100 via-blue-400 to-blue-600 bg-clip-text text-transparent"
+          />
         </div>
-        <div className="w-px h-10 bg-white/10" />
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-gray-100 font-bold text-2xl">
-            <CountUp target={150} />
-          </span>
-          <span className="text-gray-400">Markets Covered</span>
-        </div>
-        <div className="w-px h-10 bg-white/10" />
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-gray-100 font-bold text-2xl">
-            <CountUp target={1000000} />
-          </span>
-          <span className="text-gray-400">Data Points Daily</span>
-        </div>
-        
-        <div className="w-px h-10 bg-white/10" />
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-gray-100 font-bold text-2xl">
-            <CountUp target={200} />
-          </span>
-          <span className="text-gray-400">Crypto Assets</span>
+
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-4 sm:gap-x-8 text-sm">
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-gray-100 font-bold text-xl sm:text-2xl">
+              <CountUp target={500} />
+            </span>
+            <span className="text-gray-400">Stocks Tracked</span>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-gray-100 font-bold text-xl sm:text-2xl">
+              <CountUp target={150} />
+            </span>
+            <span className="text-gray-400">Markets Covered</span>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-gray-100 font-bold text-xl sm:text-2xl">
+              <CountUp target={1000000} />
+            </span>
+            <span className="text-gray-400">Data Points Daily</span>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-gray-100 font-bold text-xl sm:text-2xl">
+              <CountUp target={200} />
+            </span>
+            <span className="text-gray-400">Crypto Assets</span>
+          </div>
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full pb-8">
+      <div className="w-full shrink-0 pb-6 sm:pb-8">
         <LogoLoop
           logos={companies}
           speed={80}

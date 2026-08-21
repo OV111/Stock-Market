@@ -208,6 +208,9 @@ const DotField = memo(({
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     rafRef.current = requestAnimationFrame(tick);
 
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(canvas.parentElement);
+
     rebuildRef.current = () => {
       const { w, h } = sizeRef.current;
       if (w > 0 && h > 0) buildDots(w, h);
@@ -217,6 +220,7 @@ const DotField = memo(({
       cancelAnimationFrame(rafRef.current);
       clearInterval(speedInterval);
       clearTimeout(resizeTimer);
+      resizeObserver.disconnect();
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
     };

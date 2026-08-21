@@ -5,7 +5,6 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import DotField from "@/components/DotField";
 import UserMenu from "@/components/ui/UserMenu";
 import { navbarItems } from "@/lib/constants";
 import type { CurrentUser } from "@/lib/getCurrentUser";
@@ -14,19 +13,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <nav className="sticky top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 pt-2">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <DotField
-          dotRadius={1}
-          dotSpacing={18}
-          bulgeStrength={60}
-          glowRadius={120}
-          gradientFrom="rgba(59, 130, 246, 0.2)"
-          gradientTo="rgba(96, 165, 250, 0.08)"
-          glowColor="#050505"
-        />
-      </div>
-
+    <nav className="sticky top-0 left-0 right-0 z-50 w-full h-16 flex items-center justify-between px-6 bg-transparent">
       <Link
         href="/"
         className="flex items-center gap-2"

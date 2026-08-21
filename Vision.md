@@ -173,6 +173,20 @@ Order, in priority:
 
 The trap: building the AI layer or the alerts UI first because they demo well. They demo well and then fall over the first time someone checks the math, which is worse than not having them.
 
+### Analytics Engine Layout
+
+Step 1's "pure calculation module" is three files, one folder — not separate services, not separate folders. They're the same layer (pure functions, no DB/network calls) that compose in sequence:
+
+```
+lib/analytics/
+  types.ts             // shared: Holding, Lot, ReturnMetrics, RiskMetrics
+  holdings-engine.ts    // replays the transaction log → current positions + cost basis. No prices needed.
+  returns-engine.ts     // holdings + cash-flow timeline + live prices → TWR, MWR/XIRR, unrealized P&L
+  risk-engine.ts         // holdings + historical OHLC + benchmark → beta, volatility, drawdown, Sharpe, correlation matrix
+```
+
+Each is independently unit-testable with fixture data. A route handler (e.g. `app/api/portfolio/route.ts`) fetches transactions/prices from the DB and Finnhub, then hands them to these functions — the engines themselves never touch Mongo or the network. Same functions get reused by the AI debrief layer later, no rewrite needed.
+
 ---
 
 ## The Three-Minute Test

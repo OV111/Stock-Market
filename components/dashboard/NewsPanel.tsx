@@ -1,56 +1,67 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Panel from "@/components/dashboard/Panel";
 
 type NewsItem = {
   symbol: string;
   source: string;
-  timeAgo: string;
   headline: string;
+  url: string;
+  datetime: number; // unix seconds
 };
 
-const news: NewsItem[] = [
-  {
-    symbol: "NVDA",
-    source: "Reuters",
-    timeAgo: "12m ago",
-    headline: "Nvidia lifts data-center outlook as Blackwell shipments accelerate into Q4",
-  },
-  {
-    symbol: "AAPL",
-    source: "Bloomberg",
-    timeAgo: "48m ago",
-    headline: "Apple begins volume production of foldable iPhone display, supplier says",
-  },
-  {
-    symbol: "TSLA",
-    source: "WSJ",
-    timeAgo: "1h ago",
-    headline: "Tesla trims Model Y pricing in China as domestic competition intensifies",
-  },
-  {
-    symbol: "MSFT",
-    source: "CNBC",
-    timeAgo: "2h ago",
-    headline: "Microsoft signs multi-year capacity deal to expand Azure AI footprint in Europe",
-  },
-];
+const timeAgo = (unixSeconds: number) => {
+  const diffMs = Date.now() - unixSeconds * 1000;
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+};
 
 const NewsPanel = () => {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/news")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setNews(data);
+        else setError(true);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <Panel title="NEWS" slot="@news" meta="filtered to watchlist">
-      <div className="flex flex-col divide-y divide-gray-800/80">
-        {news.map((item, i) => (
-          <div key={i} className="py-3 first:pt-0 last:pb-0">
-            <div className="flex items-center gap-2 mb-1 text-[11px] font-mono text-gray-500">
-              <span className="text-blue-400 font-semibold">{item.symbol}</span>
-              <span>·</span>
-              <span>{item.source}</span>
-              <span>·</span>
-              <span>{item.timeAgo}</span>
-            </div>
-            <p className="text-sm text-gray-200 leading-snug">{item.headline}</p>
-          </div>
-        ))}
-      </div>
+      {loading && <p className="text-gray-500 text-sm py-3">Loading news...</p>}
+      {error && <p className="text-red-500 text-sm py-3">Failed to load news.</p>}
+      {!loading && !error && (
+        <div className="flex flex-col divide-y divide-gray-800/80">
+          {news.slice(0, 4).map((item, i) => (
+            <a
+              key={i}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-3 first:pt-0 last:pb-0 block hover:opacity-80 transition-opacity"
+            >
+              <div className="flex items-center gap-2 mb-1 text-[11px] font-mono text-gray-500">
+                <span className="text-blue-400 font-semibold">{item.symbol}</span>
+                <span>·</span>
+                <span>{item.source}</span>
+                <span>·</span>
+                <span>{timeAgo(item.datetime)}</span>
+              </div>
+              <p className="text-sm text-gray-200 leading-snug">{item.headline}</p>
+            </a>
+          ))}
+        </div>
+      )}
     </Panel>
   );
 };

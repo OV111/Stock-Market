@@ -1,5 +1,39 @@
 # Vision — Stoxly
 
+> **If you're an AI reading this cold:** this doc is both the product vision and a live status snapshot. Read "Current Status" first to know exactly what exists and what's next — treat everything below it as the settled architectural decisions this project already made, not open questions to re-litigate. The user is a solo dev building this to learn deeply (finance BSc + fintech master's), not to ship fast — favor correctness and explanation over speed.
+
+---
+
+## Current Status
+
+_Last updated: 2026-08-23. Update this section whenever a build-sequence step lands._
+
+**Done:**
+- Landing page (nav, hero, responsive across breakpoints)
+- Auth: sign-in/up, Google OAuth, password reset (`models/User.ts`, `app/api/auth/*`)
+- `models/Transactions.ts` — the append-only ledger, `Decimal128` throughout, 5 currencies (USD/AMD/EUR/CNY/GBP)
+- `POST`/`GET /api/transactions` + Add Transaction modal UI
+- `lib/analytics/holdings-engine.ts` — FIFO replay of the transaction log → current holdings + cost basis
+- `lib/analytics/return-engine.ts` — TWR (external-flow sub-period chaining) + XIRR/MWR (Newton-Raphson with bisection fallback)
+- `app/api/portfolio/route.ts` + `PortfolioPanel.tsx` — real holdings/cost-basis/unrealized-P&L, live-wired to Finnhub quotes
+- Watchlist: `models/Watchlist.ts`, `GET`/`POST`/`DELETE /api/watchlist`, dashboard panel + full CRUD page
+- News: `/api/news`, dashboard `NewsPanel`, `/news` page — all live-wired to Finnhub
+
+**Known gap, not yet closed:** TWR currently approximates each sub-period's value using cumulative net cash invested (deposits − withdrawals) as a stand-in for actual market value at each flow date, because there's no historical price snapshot to pull the real value from. This will under/overstate TWR whenever price movement between deposits is significant. Fixing it needs either a `PortfolioSnapshot` cache or the OHLC time-series collection (see "Systems Problems" and "Data Model" below) so past portfolio value is knowable, not approximated.
+
+**Not started:**
+- `lib/analytics/risk-engine.ts` — beta, volatility, drawdown, Sharpe, correlation matrix. Blocked on historical OHLC data (`app/api/market/chart/route.ts` is still an empty stub).
+- `PortfolioSnapshot` — deferred cache for historical portfolio value, needed to close the TWR gap above.
+- Alerts — no model/route, page is a stub. Needs a background worker (Vercel Cron or similar), exactly-once delivery, idempotency, dedupe.
+- `stock/[symbol]/page.tsx` — currently 0 bytes.
+- AI debrief layer (see "The Idea" below) — deliberately last, per Build Sequence.
+- No test suite anywhere yet.
+- Data input is manual-entry only by design (see "Data Input" note below) — no brokerage account linking.
+
+**Next recommended step:** either close the TWR gap (`PortfolioSnapshot` or OHLC) or move to `risk-engine.ts` — both are legitimate next moves; `risk-engine.ts` is more central to the moat, `PortfolioSnapshot` makes existing numbers actually correct. Ask the user which they'd rather prioritize before starting.
+
+---
+
 ## The Reframe
 
 "Stock market dashboard" is one of the most saturated portfolio project categories that exists — up there with e-commerce clones and todo apps. A reviewer's first reaction to the repo name is pattern recognition, not curiosity: _another ticker app_. Every UI feature added inside that frame fights an uphill battle for attention it will not win.

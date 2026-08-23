@@ -1,3 +1,5 @@
+import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
+
 const DashboardHeader = () => {
   return (
     <div className="flex items-start justify-between mb-6">
@@ -9,15 +11,18 @@ const DashboardHeader = () => {
           Each panel streams independently. A failed slot never blocks the rest of the page.
         </p>
       </div>
-      <div className="flex items-center gap-2 text-[11px] font-mono text-gray-500 whitespace-nowrap pt-1">
-        <span className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-          LIVE
-        </span>
-        <span className="text-gray-700">·</span>
-        <span>NYSE OPEN</span>
-        <span className="text-gray-700">·</span>
-        <span>14:32:07 ET</span>
+      <div className="flex flex-col items-end gap-2">
+        <AddTransactionModal />
+        <div className="flex items-center gap-2 text-[11px] font-mono text-gray-500 whitespace-nowrap pt-1">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+            LIVE
+          </span>
+          <span className="text-gray-700">·</span>
+          <span>NYSE OPEN</span>
+          <span className="text-gray-700">·</span>
+          <span>14:32:07 ET</span>
+        </div>
       </div>
     </div>
   );

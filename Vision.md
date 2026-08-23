@@ -18,19 +18,29 @@ _Last updated: 2026-08-23. Update this section whenever a build-sequence step la
 - `app/api/portfolio/route.ts` + `PortfolioPanel.tsx` — real holdings/cost-basis/unrealized-P&L, live-wired to Finnhub quotes
 - Watchlist: `models/Watchlist.ts`, `GET`/`POST`/`DELETE /api/watchlist`, dashboard panel + full CRUD page
 - News: `/api/news`, dashboard `NewsPanel`, `/news` page — all live-wired to Finnhub
+- `lib/analytics/risk-engine.ts` — beta, annualized volatility, max drawdown, Sharpe, correlation matrix, read from `PriceBar`; returns `null` until enough history exists
+- Both engines are wired into `/api/portfolio` and rendered in `PortfolioPanel.tsx` (TWR/MWR + drift, plus a risk row that appears only when `PriceBar` supports it)
+- Alerts: `models/Alert.ts` (ARMED/TRIGGERED/DISABLED state machine), `lib/alertEvaluator.ts` with `findOneAndUpdate` compare-and-swap for exactly-once notification + hysteresis/cooldown dedupe, CRUD + cron-secret-guarded `/api/alerts/evaluate`, full CRUD page
+- Search: `searchSymbols` + `/api/search` + debounced search page linking to `/stock/[symbol]`
+- Portfolio history: `/api/snapshots` + `PortfolioHistoryPanel` on the dashboard (reads the `PortfolioSnapshot` cache)
+- `models/PriceBar.ts` (Mongo time-series) + `lib/priceBarSync.ts` + `/api/pricebars/sync`
+- `models/PortfolioSnapshot.ts` + `lib/portfolioSnapshotSync.ts` + `/api/snapshots/sync` — idempotent daily cache, unique on `{userId, snapshotDate}`
+- **Test suite**: Vitest, 22 tests over `holdings-engine` and `return-engine` (`npm test`). Covers FIFO lot consumption, split cost-basis preservation, out-of-order replay, XIRR known-answer + root verification + degenerate inputs. Caught and fixed a real float-dust bug where a fully-sold fractional position stayed visible as an open holding — the engines now close lots on a `QUANTITY_EPSILON` rather than `=== 0`.
 
-**Known gap, not yet closed:** TWR currently approximates each sub-period's value using cumulative net cash invested (deposits − withdrawals) as a stand-in for actual market value at each flow date, because there's no historical price snapshot to pull the real value from. This will under/overstate TWR whenever price movement between deposits is significant. Fixing it needs either a `PortfolioSnapshot` cache or the OHLC time-series collection (see "Systems Problems" and "Data Model" below) so past portfolio value is knowable, not approximated.
+**Known gap, not yet closed:** TWR currently approximates each sub-period's value using cumulative net cash invested (deposits − withdrawals) as a stand-in for actual market value at each flow date, because there's no historical price snapshot to pull the real value from. This will under/overstate TWR whenever price movement between deposits is significant. Fixing it needs `PortfolioSnapshot` rows to accumulate (the model and sync route now exist — the daily cron that populates them does not) or the OHLC time-series collection backfilled, so past portfolio value is knowable rather than approximated.
 
-**Not started:**
-- `lib/analytics/risk-engine.ts` — beta, volatility, drawdown, Sharpe, correlation matrix. Blocked on historical OHLC data (`app/api/market/chart/route.ts` is still an empty stub).
-- `PortfolioSnapshot` — deferred cache for historical portfolio value, needed to close the TWR gap above.
-- Alerts — no model/route, page is a stub. Needs a background worker (Vercel Cron or similar), exactly-once delivery, idempotency, dedupe.
-- `stock/[symbol]/page.tsx` — currently 0 bytes.
-- AI debrief layer (see "The Idea" below) — deliberately last, per Build Sequence.
-- No test suite anywhere yet.
+**Resolved:** Finnhub's `/stock/candle` is plan-gated on the current key (confirmed `"restricted"`). `lib/priceBarSync.ts` now falls back to `lib/twelvedata.ts` (`time_series` endpoint, free tier: 8 credits/min, 800/day) whenever Finnhub returns `null`. **Requires `TWELVE_DATA_API_KEY` in `.env.local`** — sign up at twelvedata.com, the code treats a missing key as "provider unavailable" rather than erroring, so `risk-engine.ts` stays gracefully `null` until it's added. Once set, verify with `POST /api/pricebars/sync` — a `"source": "twelvedata"` in the response confirms the fallback fired.
+
+**Not started / remaining:**
+- **AI debrief layer** (see "The Idea" below) — deliberately last, per Build Sequence. Blocked: no `ANTHROPIC_API_KEY` in `.env.local` yet.
+- **Seeded demo account** — Vision.md's own "three-minute test" calls this the single highest-conversion decision in the project, and it doesn't exist. A reviewer currently hits a signup wall and an empty portfolio.
+- **Cron wiring** — `/api/pricebars/sync`, `/api/snapshots/sync`, and `/api/alerts/evaluate` are all manual-trigger routes. None run on a schedule yet; they need a `vercel.json` crons entry. Until then `PortfolioSnapshot` stays empty and the history chart shows its empty state.
+- `risk-engine.ts` is untested — it queries `PriceBar` directly, so unit testing needs either dependency injection of the price-bar fetch or `mongodb-memory-server`. Refactoring it to accept price series as an argument (like the other two engines) is the change to make first.
+- `app/api/market/chart/route.ts` — still a stub.
 - Data input is manual-entry only by design (see "Data Input" note below) — no brokerage account linking.
+- `PortfolioHistoryPanel` reuses `components/stock/PriceChart.tsx` by padding snapshot values into unused OHLC fields. Works, but the clean fix is an optional `values: number[]` prop on `PriceChart` that skips the candle mapping.
 
-**Next recommended step:** either close the TWR gap (`PortfolioSnapshot` or OHLC) or move to `risk-engine.ts` — both are legitimate next moves; `risk-engine.ts` is more central to the moat, `PortfolioSnapshot` makes existing numbers actually correct. Ask the user which they'd rather prioritize before starting.
+**Next recommended step:** verify Finnhub candle access (see Blocking unknown above) — it gates whether `risk-engine.ts` can ever return real numbers, and the answer determines whether the next task is "wire the cron" or "swap OHLC providers." After that, the seeded demo account is the highest-leverage remaining work per this doc's own argument.
 
 ---
 

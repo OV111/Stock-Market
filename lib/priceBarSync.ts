@@ -1,15 +1,20 @@
 import { connectDB } from "@/lib/mongoose";
 import PriceBar from "@/models/PriceBar";
-import { fetchDailyCandles } from "@/lib/finnhub";
+import { fetchDailyCandles, type CandleBar } from "@/lib/finnhub";
+import { fetchDailyCandlesFromTwelveData } from "@/lib/twelvedata";
 
 export type SyncResult = {
   symbol: string;
   status: "ok" | "no_data" | "restricted" | "error";
   barsInserted: number;
+  source?: "finnhub" | "twelvedata";
 };
 
 /**
  * Backfills daily OHLC bars for one symbol over the last `days` days.
+ * Tries Finnhub first, falls back to Twelve Data when Finnhub returns `null`
+ * (plan-gated or request failure) — the two providers share the CandleBar
+ * shape, so nothing downstream needs to know which one actually answered.
  * Dedupes in application code (no unique index on time-series collections):
  * skips any bar whose timestamp already exists for this symbol before inserting.
  */
@@ -19,13 +24,19 @@ export async function syncPriceBars(symbol: string, days = 365): Promise<SyncRes
   const to = Math.floor(Date.now() / 1000);
   const from = to - days * 86_400;
 
-  const bars = await fetchDailyCandles(symbol, from, to);
+  let bars: CandleBar[] | null = await fetchDailyCandles(symbol, from, to);
+  let source: SyncResult["source"] = "finnhub";
+
+  if (bars === null) {
+    bars = await fetchDailyCandlesFromTwelveData(symbol, from, to);
+    source = "twelvedata";
+  }
 
   if (bars === null) {
     return { symbol, status: "restricted", barsInserted: 0 };
   }
   if (bars.length === 0) {
-    return { symbol, status: "no_data", barsInserted: 0 };
+    return { symbol, status: "no_data", barsInserted: 0, source };
   }
 
   const existing = await PriceBar.find(
@@ -42,7 +53,7 @@ export async function syncPriceBars(symbol: string, days = 365): Promise<SyncRes
     await PriceBar.insertMany(newBars);
   }
 
-  return { symbol, status: "ok", barsInserted: newBars.length };
+  return { symbol, status: "ok", barsInserted: newBars.length, source };
 }
 
 export async function syncPriceBarsForSymbols(

@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongoose";
 import { getCurrentUser } from "@/lib/getCurrentUser";
 import Transaction from "@/models/Transactions";
 import { buildHoldings } from "@/lib/analytics/holdings-engine";
+import { calculateReturns } from "@/lib/analytics/return-engine";
+import { calculateRiskMetrics } from "@/lib/analytics/risk-engine";
 import { fetchQuotes } from "@/lib/finnhub";
 
 export async function GET() {
@@ -53,6 +55,25 @@ export async function GET() {
     const unrealizedPnl = holdingsValue - costBasis;
     const unrealizedPnlPct = costBasis > 0 ? (unrealizedPnl / costBasis) * 100 : 0;
 
+    // Return + risk metrics. `currentPrices` is the plain symbol->price map both
+    // engines expect. Risk metrics read historical PriceBar data and return null
+    // when there isn't enough of it yet — that's expected, not an error.
+    const currentPrices: Record<string, number> = Object.fromEntries(
+      quotes.map((q) => [q.symbol, q.price]),
+    );
+
+    const returns =
+      holdings.length > 0 ? calculateReturns(transactions, holdings, currentPrices) : null;
+
+    let risk = null;
+    try {
+      risk = holdings.length > 0 ? await calculateRiskMetrics(holdings, currentPrices) : null;
+    } catch (riskErr) {
+      // Risk metrics are a nice-to-have — never let them take down the whole
+      // portfolio response, which the dashboard depends on.
+      console.error("[portfolio:GET] risk metrics failed", riskErr);
+    }
+
     return NextResponse.json(
       {
         holdingsValue,
@@ -60,6 +81,8 @@ export async function GET() {
         unrealizedPnl,
         unrealizedPnlPct,
         holdings: holdingsWithMarketData,
+        returns,
+        risk,
       },
       { status: 200 },
     );

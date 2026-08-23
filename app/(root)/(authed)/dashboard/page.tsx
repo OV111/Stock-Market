@@ -1,5 +1,6 @@
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import PortfolioPanel from "@/components/dashboard/PortfolioPanel";
+import PortfolioHistoryPanel from "@/components/dashboard/PortfolioHistoryPanel";
 import WatchlistPanel from "@/components/dashboard/WatchlistPanel";
 import MoversPanel from "@/components/dashboard/MoversPanel";
 import NewsPanel from "@/components/dashboard/NewsPanel";
@@ -11,6 +12,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
         <PortfolioPanel />
         <WatchlistPanel />
+        <PortfolioHistoryPanel />
         <MoversPanel />
         <NewsPanel />
       </div>

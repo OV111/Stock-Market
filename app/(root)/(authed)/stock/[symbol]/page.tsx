@@ -39,11 +39,20 @@ type CandleBar = {
   volume: number;
 };
 
+type InsiderFiling = {
+  accessionNumber: string;
+  filingDate: string;
+  formType: string;
+  filerName: string | null;
+  documentUrl: string;
+};
+
 type StockData = {
   quote: Quote | null;
   profile: CompanyProfile | null;
   news: NewsItem[];
   candles: CandleBar[] | null;
+  insiderFilings: InsiderFiling[];
 };
 
 const timeAgo = (unixSeconds: number) => {
@@ -100,7 +109,7 @@ const StockPage = ({ params }: StockPageProps) => {
     );
   }
 
-  const { quote, profile, news, candles } = data;
+  const { quote, profile, news, candles, insiderFilings } = data;
   const isPositive = quote.changePercent >= 0;
   const hasChart = Array.isArray(candles) && candles.length > 0;
 
@@ -188,6 +197,34 @@ const StockPage = ({ params }: StockPageProps) => {
             Price History (90d)
           </h2>
           <PriceChart candles={candles!} />
+        </div>
+      )}
+
+      {/* Insider activity — SEC EDGAR Form 4 filings, metadata only for now */}
+      {insiderFilings.length > 0 && (
+        <div className="bg-gray-800 border border-gray-600 rounded-xl p-6">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
+            Insider Activity
+          </h2>
+          <div className="flex flex-col divide-y divide-gray-800/80">
+            {insiderFilings.map((filing) => (
+              <a
+                key={filing.accessionNumber}
+                href={filing.documentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-3 first:pt-0 last:pb-0 flex items-center justify-between hover:opacity-80 transition-opacity"
+              >
+                <div className="flex items-center gap-2 text-sm text-gray-200">
+                  <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-gray-700 text-blue-400">
+                    Form {filing.formType}
+                  </span>
+                  <span>{filing.filerName ?? "Insider transaction"}</span>
+                </div>
+                <span className="text-xs font-mono text-gray-500">{filing.filingDate}</span>
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

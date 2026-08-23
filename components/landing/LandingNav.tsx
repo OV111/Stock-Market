@@ -17,7 +17,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
     <nav className="sticky top-0 left-0 right-0 z-50 w-full h-16 flex items-center justify-between px-4 sm:px-6 bg-transparent">
       <Link
         href="/"
-        className="flex items-center gap-2"
+        className="flex cursor-pointer items-center gap-2"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -52,7 +52,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
         <p className="text-xl font-bold">Stoxly</p>
       </Link>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="cursor-pointer  flex items-center gap-2 sm:gap-3">
         {user ? (
           <>
             {/* Desktop: links inline. Hidden below md, where they'd overflow. */}
@@ -61,7 +61,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-gray-300 hover:text-white transition-colors"
+                    className="cursor-pointer text-sm text-gray-300 hover:text-white transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -117,7 +117,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
                     <Link
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="block rounded-md px-2 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                      className="block cursor-pointer rounded-md px-2 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                     >
                       {item.label}
                     </Link>

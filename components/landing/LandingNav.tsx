@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import UserMenu from "@/components/ui/UserMenu";
+import TryDemoButton from "@/components/ui/TryDemoButton";
 import { navbarItems } from "@/lib/constants";
 import type { CurrentUser } from "@/lib/getCurrentUser";
 
@@ -74,6 +75,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
           <>
             {/* Sign In is redundant on mobile once the menu exists — the
                 primary CTA is what matters at that width. */}
+            <TryDemoButton size="lg" className="hidden sm:inline-flex" />
             <Link href="/sign-in" className="hidden sm:block">
               <Button variant="ghost" size="lg" className="cursor-pointer">
                 Sign In
@@ -126,6 +128,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
               </ul>
             ) : (
               <div className="flex flex-col gap-2">
+                <TryDemoButton size="lg" fullWidth onNavigate={() => setMenuOpen(false)} />
                 <Link href="/sign-in" onClick={() => setMenuOpen(false)}>
                   <Button variant="ghost" size="lg" className="w-full cursor-pointer">
                     Sign In

@@ -41,8 +41,8 @@ const CASH_TYPES: TransactionType[] = ["DEPOSIT", "WITHDRAWAL"];
 
 const todayISODate = () => new Date().toISOString().slice(0, 10);
 
-const initialFormState = {
-  symbol: "",
+const buildInitialFormState = (defaultSymbol?: string) => ({
+  symbol: defaultSymbol ?? "",
   type: "BUY" as TransactionType,
   quantity: "",
   pricePerUnit: "",
@@ -50,11 +50,19 @@ const initialFormState = {
   currency: "USD" as Currency,
   fxRateToBase: "1",
   occurredAt: todayISODate(),
+});
+
+type AddTransactionModalProps = {
+  /** Pre-fills the symbol field — used when opened from a specific stock page. */
+  defaultSymbol?: string;
+  /** Custom trigger element (e.g. a smaller button on the stock page). Defaults
+   * to the standard dashboard "+ Add Transaction" button when omitted. */
+  trigger?: React.ReactNode;
 };
 
-const AddTransactionModal = () => {
+const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProps = {}) => {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(initialFormState);
+  const [form, setForm] = useState(() => buildInitialFormState(defaultSymbol));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -62,7 +70,7 @@ const AddTransactionModal = () => {
   const isCashType = CASH_TYPES.includes(form.type);
 
   const resetForm = () => {
-    setForm(initialFormState);
+    setForm(buildInitialFormState(defaultSymbol));
     setError(null);
     setSuccess(false);
   };
@@ -120,13 +128,15 @@ const AddTransactionModal = () => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button
-          size="sm"
-          className="bg-teal-400/10 text-teal-400 border border-teal-400/30 hover:bg-teal-400/20"
-        >
-          <Plus className="size-3.5" />
-          Add Transaction
-        </Button>
+        {trigger ?? (
+          <Button
+            size="sm"
+            className="bg-teal-400/10 text-teal-400 border border-teal-400/30 hover:bg-teal-400/20"
+          >
+            <Plus className="size-3.5" />
+            Add Transaction
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md bg-gray-950 border border-gray-800 text-gray-100">

@@ -25,7 +25,7 @@ const TransactionSchema = new Schema<ITransaction>(
     quantity: { type: Schema.Types.Decimal128, required: true },
     pricePerUnit: { type: Schema.Types.Decimal128, required: true },
     fees: { type: Schema.Types.Decimal128, default: 0 },
-    currency: { type: String, enum: ["USD", "AMD", "EUR"], required: true },
+    currency: { type: String, enum: ["USD", "AMD", "EUR", "CNY", "GBP"], required: true },
     fxRateToBase: { type: Schema.Types.Decimal128, required: true },
     occurredAt: { type: Date, required: true },
   },

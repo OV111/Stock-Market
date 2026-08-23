@@ -27,6 +27,10 @@ export type Quote = {
   price: number;
   change: number;
   changePercent: number;
+  open: number;
+  high: number;
+  low: number;
+  previousClose: number;
 };
 
 export async function fetchQuote(symbol: string): Promise<Quote | null> {
@@ -44,6 +48,10 @@ export async function fetchQuote(symbol: string): Promise<Quote | null> {
         price: data.c,
         change: data.d,
         changePercent: data.dp,
+        open: data.o,
+        high: data.h,
+        low: data.l,
+        previousClose: data.pc,
       };
     } catch (err) {
       console.error(`Failed to fetch quote for ${symbol}:`, err);

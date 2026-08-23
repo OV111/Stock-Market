@@ -31,9 +31,10 @@ _Last updated: 2026-08-23. Update this section whenever a build-sequence step la
 
 **Resolved:** Finnhub's `/stock/candle` is plan-gated on the current key (confirmed `"restricted"`). `lib/priceBarSync.ts` now falls back to `lib/twelvedata.ts` (`time_series` endpoint, free tier: 8 credits/min, 800/day) whenever Finnhub returns `null`. **Requires `TWELVE_DATA_API_KEY` in `.env.local`** — sign up at twelvedata.com, the code treats a missing key as "provider unavailable" rather than erroring, so `risk-engine.ts` stays gracefully `null` until it's added. Once set, verify with `POST /api/pricebars/sync` — a `"source": "twelvedata"` in the response confirms the fallback fired.
 
+**Done — seeded demo account:** one-click, no signup wall. `lib/demoSeed.ts` (deterministic ~2-year, 15-holding transaction set, includes an NVDA 4:1 split, a partial AAPL sell for realized P&L, a TSLA loss, and recurring dividends) + `lib/demoAccount.ts` (idempotent find-or-create + seed-once-if-empty) + `POST /api/auth/demo` (issues a real session cookie, same path as sign-in) + `TryDemoButton` wired into the landing nav (desktop/mobile) and the sign-in page. **Not yet verified against a live DB** — run it and confirm `/dashboard` renders real TWR/MWR/holdings before trusting it.
+
 **Not started / remaining:**
 - **AI debrief layer** (see "The Idea" below) — deliberately last, per Build Sequence. Blocked: no `ANTHROPIC_API_KEY` in `.env.local` yet.
-- **Seeded demo account** — Vision.md's own "three-minute test" calls this the single highest-conversion decision in the project, and it doesn't exist. A reviewer currently hits a signup wall and an empty portfolio.
 - **Cron wiring** — `/api/pricebars/sync`, `/api/snapshots/sync`, and `/api/alerts/evaluate` are all manual-trigger routes. None run on a schedule yet; they need a `vercel.json` crons entry. Until then `PortfolioSnapshot` stays empty and the history chart shows its empty state.
 - `risk-engine.ts` is untested — it queries `PriceBar` directly, so unit testing needs either dependency injection of the price-bar fetch or `mongodb-memory-server`. Refactoring it to accept price series as an argument (like the other two engines) is the change to make first.
 - `app/api/market/chart/route.ts` — still a stub.

@@ -5,9 +5,13 @@ import Features from "@/components/landing/Features";
 import Summary from "@/components/landing/Summary";
 import DotField from "@/components/DotField";
 import { getCurrentUser } from "@/lib/getCurrentUser";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const user = await getCurrentUser();
+  if (!user) {
+   redirect("/sign-in");
+  }
 
   return (
     <main className="relative overflow-hidden">

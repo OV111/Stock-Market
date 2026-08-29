@@ -140,6 +140,26 @@ const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHover
   }, [targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical, trackRef]);
 };
 
+/**
+ * @typedef {Object} LogoLoopProps
+ * @property {Array<{node: import('react').ReactNode, title?: string, href?: string}>} logos
+ * @property {number} [speed]
+ * @property {'left' | 'right'} [direction]
+ * @property {number | string} [width]
+ * @property {number} [logoHeight]
+ * @property {number} [gap]
+ * @property {boolean} [pauseOnHover]
+ * @property {number} [hoverSpeed]
+ * @property {boolean} [fadeOut]
+ * @property {string} [fadeOutColor]
+ * @property {boolean} [scaleOnHover]
+ * @property {(item: any, index: number) => import('react').ReactNode} [renderItem]
+ * @property {string} [ariaLabel]
+ * @property {string} [className]
+ * @property {import('react').CSSProperties} [style]
+ */
+
+/** @type {import('react').FC<LogoLoopProps>} */
 export const LogoLoop = memo(
   ({
     logos,

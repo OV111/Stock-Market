@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion } from "motion/react";
 import { Logo } from "@/components/ui/Logo";
+import TryDemoButton from "@/components/ui/TryDemoButton";
 
 type SignInForm = {
   email: string;
@@ -159,6 +160,8 @@ const SignInForm = () => {
         </svg>
         Continue with Google
       </a>
+
+      <TryDemoButton fullWidth size="lg" className="border-gray-600 bg-gray-900" />
 
       <p className="text-gray-500 text-sm text-center">
         Don&apos;t have an account?{" "}

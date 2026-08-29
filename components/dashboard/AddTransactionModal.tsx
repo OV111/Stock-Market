@@ -22,7 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type TransactionType = "BUY" | "SELL" | "DIVIDEND" | "SPLIT" | "DEPOSIT" | "WITHDRAWAL";
+type TransactionType =
+  | "BUY"
+  | "SELL"
+  | "DIVIDEND"
+  | "SPLIT"
+  | "DEPOSIT"
+  | "WITHDRAWAL";
 type Currency = "USD" | "AMD" | "EUR" | "CNY" | "GBP";
 
 const TRANSACTION_TYPES: TransactionType[] = [
@@ -60,7 +66,10 @@ type AddTransactionModalProps = {
   trigger?: React.ReactNode;
 };
 
-const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProps = {}) => {
+const AddTransactionModal = ({
+  defaultSymbol,
+  trigger,
+}: AddTransactionModalProps = {}) => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(() => buildInitialFormState(defaultSymbol));
   const [submitting, setSubmitting] = useState(false);
@@ -162,7 +171,10 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
                 <SelectTrigger className="w-full bg-gray-900 border-gray-700 text-gray-100 font-mono text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700 text-gray-100">
+                <SelectContent
+                  className="bg-gray-900 border-gray-700 text-gray-100 w-[var(--radix-select-trigger-width)]"
+                  position="popper"
+                >
                   {TRANSACTION_TYPES.map((t) => (
                     <SelectItem key={t} value={t}>
                       {t}
@@ -179,13 +191,16 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
               <Select
                 value={form.currency}
                 onValueChange={(value) =>
-                  setForm((f) => ({ ...f, currency: value as Currency }))
+                  setForm((f) => ({ ...f, currency: value }))
                 }
               >
                 <SelectTrigger className="w-full bg-gray-900 border-gray-700 text-gray-100 font-mono text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700 text-gray-100">
+                <SelectContent
+                  className="bg-gray-900 border-gray-700 text-gray-100 w-[var(--radix-select-trigger-width)]"
+                  position="popper"
+                >
                   {CURRENCIES.map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}
@@ -204,7 +219,10 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
               <Input
                 value={form.symbol}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, symbol: e.target.value.toUpperCase() }))
+                  setForm((f) => ({
+                    ...f,
+                    symbol: e.target.value.toUpperCase(),
+                  }))
                 }
                 placeholder="AAPL"
                 required={!isCashType}
@@ -223,10 +241,12 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
                 step="any"
                 min="0"
                 value={form.quantity}
-                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, quantity: e.target.value }))
+                }
                 placeholder="0.00"
                 required
-                className="bg-gray-900 border-gray-700 text-gray-100 font-mono"
+                className="bg-gray-900 border-gray-700 text-gray-100 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 
@@ -245,7 +265,7 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
                 placeholder="0.00"
                 disabled={isCashType}
                 required={!isCashType}
-                className="bg-gray-900 border-gray-700 text-gray-100 font-mono disabled:opacity-40"
+                className="bg-gray-900 border-gray-700 text-gray-100 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -260,9 +280,11 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
                 step="any"
                 min="0"
                 value={form.fees}
-                onChange={(e) => setForm((f) => ({ ...f, fees: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, fees: e.target.value }))
+                }
                 placeholder="0.00"
-                className="bg-gray-900 border-gray-700 text-gray-100 font-mono"
+                className="bg-gray-900 border-gray-700 text-gray-100 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 
@@ -277,7 +299,7 @@ const AddTransactionModal = ({ defaultSymbol, trigger }: AddTransactionModalProp
                   setForm((f) => ({ ...f, occurredAt: e.target.value }))
                 }
                 required
-                className="bg-gray-900 border-gray-700 text-gray-100 font-mono"
+                className="bg-gray-900 border-gray-700 text-gray-100 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>

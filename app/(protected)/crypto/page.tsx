@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
-
+import { BarChart3, RefreshCw, WalletCards, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import CryptoAssetCard from "@/components/crypto/CryptoAssetCard";
+import { useRef } from "react";
 type CryptoAsset = {
   symbol: string;
   ticker: string;
   name: string;
+  image?: string;
   price: number;
   change: number;
   changePercent: number;
@@ -14,96 +17,333 @@ type CryptoAsset = {
   low: number;
 };
 
+const formatPrice = (price: number) =>
+  price.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  });
+
+const BATCH = 12;
+
 const CryptoPage = () => {
   const [assets, setAssets] = useState<CryptoAsset[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedSymbols, setSelectedSymbols] = useState<string[]>([]);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(BATCH);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/crypto")
+  const loadAssets = (isInitialLoad = false) => {
+    if (isInitialLoad) {
+      setInitialLoading(true);
+      setVisibleCount(BATCH);
+      setError(false);
+    } else {
+      setRefreshing(true);
+      setError(false);
+    }
+    return fetch("/api/crypto")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setAssets(data);
-        else setError(true);
+        if (!Array.isArray(data)) {
+          setError(true);
+          return;
+        }
+        setAssets(data);
+        setSelectedSymbols((symbols) =>
+          symbols.filter((symbol) =>
+            data.some((asset) => asset.symbol === symbol),
+          ),
+        );
       })
       .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (isInitialLoad) setInitialLoading(false);
+        else setRefreshing(false);
+      });
+  };
+
+  const visibleAssets = assets.slice(0, visibleCount);
+  const hasMore = visibleCount < assets.length;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadAssets(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-gray-500 text-lg">Loading crypto assets...</p>
-      </div>
-    );
-  }
+  const loaderRef = useRef<HTMLDivElement>(null);
 
-  if (error) {
+  useEffect(() => {
+    const el = loaderRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setVisibleCount((c) => c + BATCH);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore]);
+  const selectedAssets = assets.filter((asset) =>
+    selectedSymbols.includes(asset.symbol),
+  );
+  const averageChange = selectedAssets.length
+    ? selectedAssets.reduce((sum, asset) => sum + asset.changePercent, 0) /
+      selectedAssets.length
+    : 0;
+  const bestPerformer = selectedAssets.reduce<CryptoAsset | null>(
+    (best, asset) =>
+      !best || asset.changePercent > best.changePercent ? asset : best,
+    null,
+  );
+  const weakestPerformer = selectedAssets.reduce<CryptoAsset | null>(
+    (weakest, asset) =>
+      !weakest || asset.changePercent < weakest.changePercent ? asset : weakest,
+    null,
+  );
+
+  const toggleSelected = (symbol: string) => {
+    setSelectedSymbols((symbols) =>
+      symbols.includes(symbol)
+        ? symbols.filter((selectedSymbol) => selectedSymbol !== symbol)
+        : [...symbols, symbol],
+    );
+  };
+
+  if (initialLoading)
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-red-500 text-lg">Failed to load crypto data.</p>
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <p className="text-lg text-gray-500">Loading crypto assets...</p>
       </div>
     );
-  }
+
+  if (error && assets.length === 0)
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+        <p className="text-lg text-red-500">Failed to load crypto data.</p>
+        <Button variant="outline" onClick={() => void loadAssets(true)}>
+          <RefreshCw className="size-4" /> Try again
+        </Button>
+      </div>
+    );
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-100">Crypto Assets</h1>
-        <p className="text-gray-500 mt-1 text-sm">Live prices for top cryptocurrencies</p>
+    <div className="space-y-8 mx-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-100 md:text-3xl">
+            Crypto Markets
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Select assets to compare their live market data, then analyze your
+            selection.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={refreshing}
+            onClick={() => void loadAssets()}
+          >
+            <RefreshCw
+              className={`size-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+          <Button
+            size="sm"
+            disabled={selectedAssets.length === 0}
+            onClick={() => setShowAnalysis(true)}
+            className="border border-teal-400/30 bg-teal-400/10 text-teal-400 hover:bg-teal-400/20"
+          >
+            <BarChart3 className="size-3.5" /> Analyze{" "}
+            {selectedAssets.length || ""}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {assets.map((asset) => {
-          const isPositive = asset.changePercent >= 0;
-          return (
-            <div
-              key={asset.ticker}
-              className="bg-gray-800 border border-gray-600 rounded-xl p-5 hover:border-gray-500 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <span className="text-xs font-mono font-semibold px-2 py-1 rounded bg-gray-700 text-yellow-400">
-                    {asset.ticker}
-                  </span>
-                  <p className="text-gray-300 font-semibold text-base mt-2">{asset.name}</p>
-                </div>
-                <div
-                  className={`flex items-center gap-1 text-sm font-medium px-2 py-1 rounded ${
-                    isPositive
-                      ? "bg-teal-400/10 text-teal-400"
-                      : "bg-red-500/10 text-red-500"
-                  }`}
-                >
-                  {isPositive ? (
-                    <TrendingUp className="w-3.5 h-3.5" />
-                  ) : (
-                    <TrendingDown className="w-3.5 h-3.5" />
-                  )}
-                  {isPositive ? "+" : ""}
-                  {asset.changePercent?.toFixed(2)}%
-                </div>
-              </div>
-
-              <p className="text-2xl font-bold text-gray-100">
-                ${asset.price?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+      {showAnalysis && selectedAssets.length > 0 && (
+        <section className="rounded-xl border border-teal-400/25 bg-teal-400/5 p-5 md:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-teal-400">
+                Selected-market analysis
               </p>
-
-              <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-                <span>
-                  Change:{" "}
-                  <span className={isPositive ? "text-teal-400" : "text-red-500"}>
-                    {isPositive ? "+" : ""}${asset.change?.toFixed(4)}
-                  </span>
-                </span>
-                <span>H: ${asset.high?.toFixed(2)} · L: ${asset.low?.toFixed(2)}</span>
-              </div>
+              <h2 className="mt-1 text-xl font-semibold text-gray-100">
+                {selectedAssets.map((asset) => asset.ticker).join(", ")}
+              </h2>
             </div>
-          );
-        })}
-      </div>
+            <button
+              type="button"
+              onClick={() => setShowAnalysis(false)}
+              className="rounded-md p-1 text-gray-400 hover:bg-white/10 hover:text-white"
+              aria-label="Close analysis"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <AnalysisStat
+              label="Average daily move"
+              value={`${averageChange >= 0 ? "+" : ""}${averageChange.toFixed(2)}%`}
+              positive={averageChange >= 0}
+            />
+            <AnalysisStat
+              label="Strongest today"
+              value={
+                bestPerformer
+                  ? `${bestPerformer.ticker} ${bestPerformer.changePercent >= 0 ? "+" : ""}${bestPerformer.changePercent.toFixed(2)}%`
+                  : "—"
+              }
+              positive={(bestPerformer?.changePercent ?? 0) >= 0}
+            />
+            <AnalysisStat
+              label="Weakest today"
+              value={
+                weakestPerformer
+                  ? `${weakestPerformer.ticker} ${weakestPerformer.changePercent >= 0 ? "+" : ""}${weakestPerformer.changePercent.toFixed(2)}%`
+                  : "—"
+              }
+              positive={(weakestPerformer?.changePercent ?? 0) >= 0}
+            />
+          </div>
+          <div className="mt-5 overflow-x-auto rounded-lg border border-gray-800">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead className="bg-gray-950/50 text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Asset</th>
+                  <th className="px-4 py-3 font-medium">Price</th>
+                  <th className="px-4 py-3 font-medium">24h move</th>
+                  <th className="px-4 py-3 font-medium">24h range</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {selectedAssets.map((asset) => {
+                  const rangePercent =
+                    asset.low > 0
+                      ? ((asset.high - asset.low) / asset.low) * 100
+                      : 0;
+                  const positive = asset.changePercent >= 0;
+                  return (
+                    <tr key={asset.symbol} className="text-gray-300">
+                      <td className="px-4 py-3 font-medium">
+                        {asset.name}{" "}
+                        <span className="font-mono text-gray-500">
+                          {asset.ticker}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-mono">
+                        ${formatPrice(asset.price)}
+                      </td>
+                      <td
+                        className={`px-4 py-3 font-mono ${positive ? "text-teal-400" : "text-red-500"}`}
+                      >
+                        {positive ? "+" : ""}
+                        {asset.changePercent.toFixed(2)}%
+                      </td>
+                      <td className="px-4 py-3 font-mono text-gray-400">
+                        ${formatPrice(asset.low)} – ${formatPrice(asset.high)}{" "}
+                        <span className="text-gray-500">
+                          ({rangePercent.toFixed(2)}%)
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-gray-500">
+            This is a live market snapshot, not investment advice. Portfolio
+            returns, correlation, and risk require your logged transaction and
+            price history.
+          </p>
+        </section>
+      )}
+
+      {assets.length === 0 ? (
+        <div className="rounded-xl border border-gray-800 bg-gray-900/50 px-6 py-12 text-center">
+          <WalletCards className="mx-auto size-7 text-gray-600" />
+          <p className="mt-3 font-medium text-gray-300">
+            No crypto quotes are available right now.
+          </p>
+          <p className="mt-1 text-sm text-gray-500">
+            Check your Finnhub key and try again shortly.
+          </p>
+        </div>
+      ) : (
+        <div className="relative">
+          {refreshing && (
+            <div className="absolute inset-x-0 -top-1 z-10 flex justify-center">
+              <span className="rounded-full border border-teal-400/20 bg-gray-950 px-3 py-1 text-xs text-teal-400 shadow-lg">
+                Updating crypto prices…
+              </span>
+            </div>
+          )}
+          {error && (
+            <p className="mb-3 text-sm text-red-500">
+              Couldn&apos;t refresh prices. Showing the last available quotes.
+            </p>
+          )}
+          <div
+            className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${
+              refreshing ? "opacity-60" : "opacity-100"
+            }`}
+          >
+            {visibleAssets.map((asset) => (
+              <CryptoAssetCard
+                key={asset.symbol}
+                asset={asset}
+                selected={selectedSymbols.includes(asset.symbol)}
+                onSelect={toggleSelected}
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div ref={loaderRef} className="flex justify-center p-10">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setVisibleCount((c) => c + BATCH)}
+                className="border-gray-700 text-gray-400 hover:text-white"
+              >
+                Load more ({assets.length - visibleCount} remaining)
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
+
+const AnalysisStat = ({
+  label,
+  value,
+  positive,
+}: {
+  label: string;
+  value: string;
+  positive: boolean;
+}) => (
+  <div className="rounded-lg border border-gray-800 bg-gray-950/40 p-4">
+    <p className="text-xs text-gray-500">{label}</p>
+    <p
+      className={`mt-1 font-mono text-lg font-semibold ${
+        positive ? "text-teal-400" : "text-red-500"
+      }`}
+    >
+      {value}
+    </p>
+  </div>
+);
 
 export default CryptoPage;

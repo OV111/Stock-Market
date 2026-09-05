@@ -9,9 +9,9 @@ import { redirect } from "next/navigation";
 
 export default async function Home() {
   const user = await getCurrentUser();
-  if (!user) {
-   redirect("/sign-in");
-  }
+  // if (!user) {
+  //  redirect("/sign-in");
+  // }
 
   return (
     <main className="relative overflow-hidden">
@@ -19,10 +19,10 @@ export default async function Home() {
           dots run continuously behind the transparent nav. */}
       <div className="absolute top-0 left-0 w-full h-dvh -z-10">
         <DotField
-          dotRadius={1.5}
+          dotRadius={2}
           dotSpacing={22}
-          bulgeStrength={80}
-          glowRadius={180}
+          bulgeStrength={180}
+          glowRadius={260}
           gradientFrom="rgba(59, 130, 246, 0.4)"
           gradientTo="rgba(59, 130, 246, 0.18)"
           glowColor="#050505"

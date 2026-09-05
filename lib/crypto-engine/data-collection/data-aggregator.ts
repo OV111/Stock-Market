@@ -14,43 +14,40 @@ import { CoinGeckoCollector } from "./sources/coingecko-collector";
 import { EtherscanCollector } from "./sources/etherscan-collector";
 import { CryptoPanicCollector } from "./sources/cryptopanic-collector";
 import { GitHubCollector } from "./sources/github-collector";
-import { YahooFinanceCollector } from "./sources/yahoo-finance-collector";
 import logger from "../utils/logger";
-import { sourcePriority } from "../config";
 
 export class DataAggregator {
   private coingecko: CoinGeckoCollector;
   private etherscan: EtherscanCollector;
   private cryptopanic: CryptoPanicCollector;
   private github: GitHubCollector;
-  private yahoo: YahooFinanceCollector;
 
   constructor() {
     this.coingecko = new CoinGeckoCollector();
     this.etherscan = new EtherscanCollector();
     this.cryptopanic = new CryptoPanicCollector();
     this.github = new GitHubCollector();
-    this.yahoo = new YahooFinanceCollector();
   }
 
   /**
    * Collect ALL data for an asset and return a complete DataPackage
    */
   async collectAll(
-    assetId: string,
+    rawAssetId: string,
     options?: { days?: number },
   ): Promise<DataPackage> {
     const days = options?.days || 365;
     const startTime = Date.now();
-
+    const assetId = rawAssetId.replace(/^CRYPTO:/, "");
     logger.info({ assetId }, "Starting data collection");
 
-    // Step 1: Get asset metadata from CoinGecko
+    // ---- Step 1: Get asset metadata from CoinGecko ----
     const assetMeta = await this.coingecko.getAssetMetadata(assetId);
+
     const asset: Asset = {
       id: assetId,
-      symbol: "", // Fill from market data
-      name: "", // Fill from market data
+      symbol: "",
+      name: "",
       blockchain: assetMeta.blockchain || "unknown",
       contractAddress: assetMeta.contractAddress,
       categories: assetMeta.categories || [],
@@ -63,29 +60,28 @@ export class DataAggregator {
       description: assetMeta.description,
     };
 
-    // data-collection/data-aggregator.ts – REPLACE Step 2 with this
+    // ---- Step 2: Collect market data ----
+    logger.debug({ assetId }, "Fetching market data");
 
-    // Step 2: Collect market data (using YOUR lightweight quotes + enrichment)
-    logger.debug({ assetId }, 'Fetching market data');
-
-    // 2a. Get lightweight quote from YOUR function
+    // 2a. Get lightweight quote from your existing function
     const quoteData = await this.coingecko.getQuotes([assetId]);
     const lightMarket = quoteData[0];
 
-    // 2b. Get FULL market data (market cap, volume, etc.) for analysis
+    // 2b. Get FULL market data (market cap, volume, supply, etc.)
     let fullMarket: MarketData;
     try {
       fullMarket = await this.coingecko.getFullMarketData(assetId);
     } catch (error) {
-      // If full market fails, use lightweight data as fallback (if available)
+      // If full market fails, use lightweight data as fallback
       if (lightMarket) {
-        logger.warn({ assetId, error: error.message }, 'Full market data failed, using lightweight fallback');
+        logger.warn(
+          { assetId, error: (error as Error).message },
+          "Full market data failed, using lightweight fallback",
+        );
         fullMarket = {
           ...lightMarket,
-          // Keep the price/change from your function
           priceUsd: lightMarket.priceUsd || 0,
           priceChange24h: lightMarket.priceChange24h || 0,
-          // Fill missing fields with placeholders
           marketCap: 0,
           volume24h: 0,
           circulatingSupply: 0,
@@ -100,11 +96,18 @@ export class DataAggregator {
           ath: 0,
           atl: 0,
           marketCapRank: 0,
-          source: 'coingecko',
+          source: "coingecko",
           timestamp: new Date(),
+          fullyDilutedValuation: undefined,
+          volumeToMarketCapRatio: 0,
+          priceChange1y: undefined,
+          athDate: undefined,
+          atlDate: undefined,
+          dominance: undefined,
+          spread: undefined,
         } as MarketData;
       } else {
-        // No data at all – rethrow
+        // No data at all – rethrow with context
         throw new Error(`No market data available for ${assetId}`);
       }
     }
@@ -112,16 +115,23 @@ export class DataAggregator {
     const marketData = fullMarket;
 
     // Update asset metadata from the response
-    asset.symbol = marketData.symbol || asset.symbol;
-    asset.name = marketData.name || asset.name;
-    // Step 3: Collect historical OHLCV
-    logger.debug({ assetId }, "Fetching historical data");
-    const historical = await this.coingecko.getFullHistoricalData(
-      assetId,
-      days,
-    );
+    asset.symbol = (marketData as any).symbol || asset.symbol;
+    asset.name = (marketData as any).name || asset.name;
 
-    // Step 4: Collect on-chain data (if EVM and has contract address)
+    // ---- Step 3: Collect historical OHLCV ----
+    logger.debug({ assetId }, "Fetching historical data");
+    let historical: OHLCV[] = [];
+    try {
+      historical = await this.coingecko.getFullHistoricalData(assetId, days);
+    } catch (error) {
+      logger.warn(
+        { assetId, error: (error as Error).message },
+        "Failed to fetch historical data, using empty array",
+      );
+      // Continue with empty historical data – scoring will have lower confidence
+    }
+
+    // ---- Step 4: Collect on-chain data (if EVM and has contract address) ----
     let onchainData: OnChainData | null = null;
     if (asset.contractAddress && this.etherscan.isUsable()) {
       logger.debug(
@@ -153,24 +163,27 @@ export class DataAggregator {
         } as OnChainData;
       } catch (error) {
         logger.warn(
-          { assetId, error: error.message },
+          { assetId, error: (error as Error).message },
           "Failed to fetch on-chain data",
         );
       }
     }
 
-    // Step 5: Collect news
+    // ---- Step 5: Collect news ----
     logger.debug({ assetId }, "Fetching news");
     let news: NewsItem[] = [];
     try {
       news = await this.cryptopanic.getNews(assetId);
     } catch (error) {
-      logger.warn({ assetId, error: error.message }, "Failed to fetch news");
+      logger.warn(
+        { assetId, error: (error as Error).message },
+        "Failed to fetch news",
+      );
     }
 
-    // Step 6: Collect macro data
-    logger.debug("Fetching macro data");
-    let macro: MacroContext = {
+    // ---- Step 6: Collect macro data (defaults only – no external API) ----
+    logger.debug("Using default macro context");
+    const macro: MacroContext = {
       btcTrend: "sideways",
       ethTrend: "sideways",
       totalMarketCap: 0,
@@ -182,14 +195,8 @@ export class DataAggregator {
       correlationToBtc: 0,
       correlationToEth: 0,
     };
-    try {
-      const macroPartial = await this.yahoo.getMacroData();
-      macro = { ...macro, ...macroPartial };
-    } catch (error) {
-      logger.warn({ error: error.message }, "Failed to fetch macro data");
-    }
 
-    // Step 7: Build Tokenomics data (from market data)
+    // ---- Step 7: Build Tokenomics data ----
     const tokenomics: TokenomicsData = {
       inflationRate: this.calculateInflationRate(marketData),
       emissionSchedule: [],
@@ -210,8 +217,8 @@ export class DataAggregator {
       buybackBurn: false,
     };
 
-    // Step 8: Build FundamentalData (from assetMeta + GitHub)
-    let fundamental: FundamentalData = {
+    // ---- Step 8: Build FundamentalData ----
+    const fundamental: FundamentalData = {
       useCase: assetMeta.description || "",
       blockchainArchitecture: assetMeta.blockchain || "unknown",
       consensusMechanism: assetMeta.consensusMechanism || "unknown",
@@ -229,14 +236,14 @@ export class DataAggregator {
       adoptionIndicators: {},
     };
 
-    // Step 9: Build DataQuality Metadata
+    // ---- Step 9: Build DataQuality Metadata ----
     const dataQuality: DataQualityMetadata = {
       completeness: this.calculateCompleteness({
         market: marketData,
         fundamental,
         tokenomics,
       }),
-      freshness: 0.95, // Assuming fresh since we just fetched
+      freshness: 0.95,
       reliability: 0.9,
       overallQuality: 0.85,
       missingFields: this.findMissingFields({
@@ -247,7 +254,7 @@ export class DataAggregator {
       staleFields: [],
     };
 
-    // Step 10: Assemble final DataPackage
+    // ---- Step 10: Assemble final DataPackage ----
     const dataPackage: DataPackage = {
       asset,
       market: marketData,
@@ -268,13 +275,12 @@ export class DataAggregator {
     return dataPackage;
   }
 
-  // --- Helpers ---
+  // ---- Helpers ----
 
   private calculateInflationRate(market: MarketData): number {
     if (!market.maxSupply || market.maxSupply <= 0) return 0;
     const unlocked = market.circulatingSupply / market.maxSupply;
-    if (unlocked >= 0.95) return 0.5; // Nearly fully unlocked
-    // Rough estimate: if 50% unlocked, annual issuance ~5-10%
+    if (unlocked >= 0.95) return 0.5;
     return Math.max(0, (1 - unlocked) * 8);
   }
 

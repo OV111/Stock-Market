@@ -1,3 +1,4 @@
+// data-collection/sources/coingecko-collector.ts
 import { BaseCollector } from '../base-collector';
 import { DataSourceConfig } from '../../config/data-sources';
 import { dataSources } from '../../config';
@@ -45,20 +46,21 @@ export class CoinGeckoCollector extends BaseCollector {
       source: 'coingecko',
       timestamp: new Date(),
       spread: undefined,
-      symbol: q.symbol.replace('CRYPTO:', ''), // Add symbol field
-      name: q.symbol, // placeholder
+      symbol: q.symbol.replace('CRYPTO:', ''),
+      name: q.symbol,
     } as MarketData));
   }
 
   // ============================================================
-  // 2. FULL MARKET DATA (for heavy analysis)
+  // 2. FULL MARKET DATA – ✅ NO API KEY HEADER
   // ============================================================
   async getFullMarketData(assetId: string): Promise<MarketData> {
-    const apiKey = process.env.COINGECKO_API_KEY;
-    const url = `${this.config.baseUrl}/coins/markets?vs_currency=usd&ids=${assetId}&price_change_percentage=24h,7d,30d,90d&precision=full`;
+    // ✅ Strip CRYPTO: prefix if present
+    const cleanId = assetId.replace(/^CRYPTO:/, '');
+    const url = `${this.config.baseUrl}/coins/markets?vs_currency=usd&ids=${cleanId}&price_change_percentage=24h,7d,30d,90d&precision=full`;
 
     const response = await fetch(url, {
-      headers: apiKey ? { 'x-cg-demo-api-key': apiKey } : {},
+      // ✅ NO HEADERS – free tier works without API key
       signal: AbortSignal.timeout(10000),
     });
 
@@ -66,7 +68,7 @@ export class CoinGeckoCollector extends BaseCollector {
       throw new DataCollectionError(
         `Failed to fetch full market data: ${response.status}`,
         'coingecko',
-        { assetId, status: response.status }
+        { assetId: cleanId, status: response.status }
       );
     }
 
@@ -74,9 +76,9 @@ export class CoinGeckoCollector extends BaseCollector {
     const item = data[0];
     if (!item) {
       throw new DataCollectionError(
-        `No market data for ${assetId}`,
+        `No market data for ${cleanId}`,
         'coingecko',
-        { assetId },
+        { assetId: cleanId },
         false
       );
     }
@@ -96,7 +98,7 @@ export class CoinGeckoCollector extends BaseCollector {
       priceChange30d: item.price_change_percentage_30d_in_currency || 0,
       priceChange90d: item.price_change_percentage_90d_in_currency || 0,
       priceChange1y: undefined,
-      volatility30d: 0, // calculated later from OHLCV
+      volatility30d: 0,
       volatility90d: 0,
       ath: item.ath || 0,
       athDate: item.ath_date ? new Date(item.ath_date) : undefined,
@@ -107,8 +109,8 @@ export class CoinGeckoCollector extends BaseCollector {
       source: 'coingecko',
       timestamp: new Date(),
       spread: undefined,
-      symbol: item.symbol || assetId,
-      name: item.name || assetId,
+      symbol: item.symbol || cleanId,
+      name: item.name || cleanId,
     };
   }
 
@@ -120,14 +122,14 @@ export class CoinGeckoCollector extends BaseCollector {
   }
 
   // ============================================================
-  // 4. HISTORICAL OHLC (CoinGecko OHLC endpoint)
+  // 4. HISTORICAL OHLC – ✅ NO API KEY HEADER
   // ============================================================
   async getHistoricalData(assetId: string, days: number = 365): Promise<OHLCV[]> {
-    const apiKey = process.env.COINGECKO_API_KEY;
-    const url = `${this.config.baseUrl}/coins/${assetId}/ohlc?vs_currency=usd&days=${days}`;
+    const cleanId = assetId.replace(/^CRYPTO:/, '');
+    const url = `${this.config.baseUrl}/coins/${cleanId}/ohlc?vs_currency=usd&days=${days}`;
 
     const response = await fetch(url, {
-      headers: apiKey ? { 'x-cg-demo-api-key': apiKey } : {},
+      // ✅ NO HEADERS
       signal: AbortSignal.timeout(15000),
     });
 
@@ -135,7 +137,7 @@ export class CoinGeckoCollector extends BaseCollector {
       throw new DataCollectionError(
         `Failed to fetch OHLC: ${response.status}`,
         'coingecko',
-        { assetId, status: response.status }
+        { assetId: cleanId, status: response.status }
       );
     }
 
@@ -146,19 +148,19 @@ export class CoinGeckoCollector extends BaseCollector {
       high: candle[2],
       low: candle[3],
       close: candle[4],
-      volume: 0, // will be filled later
+      volume: 0,
     }));
   }
 
   // ============================================================
-  // 5. HISTORICAL VOLUME (market_chart endpoint)
+  // 5. HISTORICAL VOLUME – ✅ NO API KEY HEADER
   // ============================================================
   private async getHistoricalVolume(assetId: string, days: number = 365): Promise<{ timestamp: Date; volume: number }[]> {
-    const apiKey = process.env.COINGECKO_API_KEY;
-    const url = `${this.config.baseUrl}/coins/${assetId}/market_chart?vs_currency=usd&days=${days}`;
+    const cleanId = assetId.replace(/^CRYPTO:/, '');
+    const url = `${this.config.baseUrl}/coins/${cleanId}/market_chart?vs_currency=usd&days=${days}`;
 
     const response = await fetch(url, {
-      headers: apiKey ? { 'x-cg-demo-api-key': apiKey } : {},
+      // ✅ NO HEADERS
       signal: AbortSignal.timeout(15000),
     });
 
@@ -166,7 +168,7 @@ export class CoinGeckoCollector extends BaseCollector {
       throw new DataCollectionError(
         `Failed to fetch volume data: ${response.status}`,
         'coingecko',
-        { assetId, status: response.status }
+        { assetId: cleanId, status: response.status }
       );
     }
 
@@ -186,14 +188,12 @@ export class CoinGeckoCollector extends BaseCollector {
       this.getHistoricalVolume(assetId, days),
     ]);
 
-    // Build volume map grouped by day (YYYY-MM-DD)
     const volumeMap = new Map<string, number>();
     for (const v of volumes) {
       const key = v.timestamp.toISOString().split('T')[0];
       volumeMap.set(key, (volumeMap.get(key) || 0) + v.volume);
     }
 
-    // Merge volume into OHLC
     return ohlc.map((candle) => {
       const key = candle.timestamp.toISOString().split('T')[0];
       return {
@@ -204,14 +204,14 @@ export class CoinGeckoCollector extends BaseCollector {
   }
 
   // ============================================================
-  // 7. ASSET METADATA (description, dev stats, etc.)
+  // 7. ASSET METADATA – ✅ NO API KEY HEADER
   // ============================================================
   async getAssetMetadata(assetId: string): Promise<any> {
-    const apiKey = process.env.COINGECKO_API_KEY; 
-    const url = `${this.config.baseUrl}/coins/${assetId}?localization=false&community_data=true&developer_data=true`;
+    const cleanId = assetId.replace(/^CRYPTO:/, '');
+    const url = `${this.config.baseUrl}/coins/${cleanId}?localization=false&community_data=true&developer_data=true`;
 
     const response = await fetch(url, {
-      headers: apiKey ? { 'x-cg-demo-api-key': apiKey } : {},
+      // ✅ NO HEADERS
       signal: AbortSignal.timeout(10000),
     });
 
@@ -219,7 +219,7 @@ export class CoinGeckoCollector extends BaseCollector {
       throw new DataCollectionError(
         `Failed to fetch asset metadata: ${response.status}`,
         'coingecko',
-        { assetId, status: response.status }
+        { assetId: cleanId, status: response.status }
       );
     }
 
@@ -248,10 +248,9 @@ export class CoinGeckoCollector extends BaseCollector {
   }
 
   // ============================================================
-  // 8. GENERIC FETCH (overridden – not used, but needed for BaseCollector)
+  // 8. GENERIC FETCH (not used)
   // ============================================================
   protected async fetchData(endpoint: string, params?: Record<string, any>): Promise<any> {
-    // Not used – we have specific methods for each endpoint.
     throw new Error('Use specific methods instead (getQuotes, getFullMarketData, etc.)');
   }
 }

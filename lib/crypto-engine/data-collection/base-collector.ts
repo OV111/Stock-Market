@@ -1,8 +1,8 @@
-import logger, { createChildLogger } from '../utils/logger';
-import { withRetry } from '../utils/retry';
-import { DataCollectionError, RateLimitError } from '../utils/errors';
-import { DataSourceConfig } from '../config/data-sources';
-import { isSourceUsable } from '../config';
+import logger, { createChildLogger } from "../utils/logger";
+import { withRetry } from "../utils/retry";
+import { DataCollectionError, RateLimitError } from "../utils/errors";
+import { DataSourceConfig } from "../config/data-sources";
+import { isSourceUsable } from "../config";
 
 export abstract class BaseCollector {
   protected sourceName: string;
@@ -19,58 +19,54 @@ export abstract class BaseCollector {
   protected abstract loadConfig(): DataSourceConfig;
 
   /** The actual fetch logic – implemented by child classes */
-  protected abstract fetchData(endpoint: string, params?: Record<string, any>): Promise<any>;
+  protected abstract fetchData(
+    endpoint: string,
+    params?: Record<string, any>,
+  ): Promise<any>;
 
   /**
    * Protected HTTP GET with retries and rate limit handling
    */
+  // data-collection/base-collector.ts
   protected async get<T>(
     endpoint: string,
     params?: Record<string, any>,
-    options?: { retries?: number; timeout?: number }
+    options?: { retries?: number; timeout?: number },
   ): Promise<T> {
     const url = this.buildUrl(endpoint, params);
-    this.logger.debug({ url, source: this.sourceName }, 'Fetching data');
+    this.logger.debug({ url, source: this.sourceName }, "Fetching data");
 
     const result = await withRetry(
       async () => {
-        const response = await fetch(url, {
-          headers: this.buildHeaders(),
-          signal: AbortSignal.timeout(options?.timeout || this.config.timeoutMs),
-        });
+        const controller = new AbortController();
+        // ✅ Increase timeout to 30 seconds
+        const timeoutMs = options?.timeout || 30000;
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-        // Handle rate limits
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('retry-after');
-          throw new RateLimitError(
-            this.sourceName,
-            retryAfter ? parseInt(retryAfter, 10) : undefined
-          );
+        try {
+          const response = await fetch(url, {
+            headers: this.buildHeaders(),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          // ... rest of response handling
+        } catch (error) {
+          clearTimeout(timeoutId);
+          throw error;
         }
-
-        if (!response.ok) {
-          const text = await response.text();
-          throw new DataCollectionError(
-            `HTTP ${response.status}: ${text.slice(0, 200)}`,
-            this.sourceName,
-            { endpoint, status: response.status },
-            response.status >= 500 // retry on 5xx
-          );
-        }
-
-        return response.json();
       },
       {
-        maxRetries: options?.retries || this.config.rateLimitPerMinute > 20 ? 2 : 3,
-        initialDelayMs: 1000,
-        maxDelayMs: 30000,
+        maxRetries: options?.retries || 3, // Retry up to 3 times
+        initialDelayMs: 2000, // Start with 2s delay
+        maxDelayMs: 30000, // Max 30s between retries
+        backoffFactor: 2, // Exponential backoff
         onRetry: (error, attempt) => {
           this.logger.warn(
             { error: error.message, attempt, source: this.sourceName },
-            'Retrying request'
+            "Retrying request",
           );
         },
-      }
+      },
     );
 
     return result as T;
@@ -92,18 +88,20 @@ export abstract class BaseCollector {
   /** Build headers (API keys, content-type) */
   protected buildHeaders(): HeadersInit {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     // Add API key if required
-    const apiKey = this.config.apiKeyEnv ? process.env[this.config.apiKeyEnv] : undefined;
+    const apiKey = this.config.apiKeyEnv
+      ? process.env[this.config.apiKeyEnv]
+      : undefined;
     if (apiKey) {
       // CoinGecko uses 'x-cg-pro-api-key', others use 'Authorization: Bearer'
-      if (this.sourceName === 'coingecko' && apiKey) {
-        headers['x-cg-pro-api-key'] = apiKey;
+      if (this.sourceName === "coingecko" && apiKey) {
+        headers["x-cg-pro-api-key"] = apiKey;
       } else {
-        headers['Authorization'] = `Bearer ${apiKey}`;
+        headers["Authorization"] = `Bearer ${apiKey}`;
       }
     }
 

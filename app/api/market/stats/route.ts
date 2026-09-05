@@ -1,40 +1,39 @@
-import { NextResponse } from "next/server";
+// app/api/market/stats/route.ts
+import { NextResponse } from 'next/server';
 
-const INDICES = [
-  { symbol: "SPY", label: "S&P 500" },
-  { symbol: "QQQ", label: "NASDAQ" },
-  { symbol: "DIA", label: "DOW" },
-  { symbol: "IWM", label: "Russell 2000" },
-];
+const BASE_URL = 'https://api.coingecko.com/api/v3';
 
-export async function GET(): Promise<NextResponse> {
+export async function GET() {
   try {
-    const stats = await Promise.all(
-      INDICES.map(async ({ symbol, label }) => {
-        try {
-          const response = await fetch(
-            `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`,
-          );
-          if (!response.ok) return null;
-          const data = await response.json();
-          return {
-            symbol,
-            label,
-            price: data.c,
-            change: data.d,
-            changePercent: data.dp,
-          };
-        } catch (err) {
-          console.error(`Failed to fetch quote for ${symbol}:`, err);
-          return null;
-        }
-      }),
-    );
+    const response = await fetch(`${BASE_URL}/global`, {
+      signal: AbortSignal.timeout(8000),
+    });
 
-    const filtered = stats.filter((s) => s != null && s.price !== 0);
-    return NextResponse.json(filtered);
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
+    if (!response.ok) {
+      console.error(`[coingecko] global stats failed: ${response.status}`);
+      return NextResponse.json(
+        { error: 'Failed to fetch market stats' },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    const stats = data.data;
+
+    return NextResponse.json({
+      totalMarketCap: stats.total_market_cap?.usd || 0,
+      totalVolume24h: stats.total_volume?.usd || 0,
+      btcDominance: stats.market_cap_percentage?.btc || 0,
+      ethDominance: stats.market_cap_percentage?.eth || 0,
+      activeCryptocurrencies: stats.active_cryptocurrencies || 0,
+      markets: stats.markets || 0,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('[coingecko] global stats error:', error);
+    return NextResponse.json(
+      { error: 'Service temporarily unavailable' },
+      { status: 503 }
+    );
   }
 }

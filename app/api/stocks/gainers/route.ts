@@ -1,15 +1,56 @@
-import { NextResponse } from "next/server";
-import { STOCK_SYMBOLS, fetchQuotes } from "@/lib/finnhub";
+// app/api/stocks/gainers/route.ts
+import { NextResponse, NextRequest } from 'next/server';
 
-export async function GET(): Promise<NextResponse> {
+const BASE_URL = 'https://api.coingecko.com/api/v3';
+
+export async function GET(req: NextRequest) {
   try {
-    const quotes = await fetchQuotes(STOCK_SYMBOLS);
-    const gainers = quotes
-      .sort((a, b) => b.changePercent - a.changePercent)
-      .slice(0, 8);
+    const limit = Number(req.nextUrl.searchParams.get('limit')) || 8;
+
+    const params = new URLSearchParams({
+      vs_currency: 'usd',
+      order: 'market_cap_desc',
+      per_page: '100',
+      page: '1',
+      price_change_percentage: '24h',
+      precision: 'full',
+    });
+
+    const response = await fetch(`${BASE_URL}/coins/markets?${params}`, {
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!response.ok) {
+      console.error(`[coingecko] gainers failed: ${response.status}`);
+      return NextResponse.json(
+        { error: 'Failed to fetch gainers' },
+        { status: response.status }
+      );
+    }
+
+    const markets = await response.json();
+
+    const gainers = markets
+      .filter((coin: any) => coin.price_change_percentage_24h !== null)
+      .sort((a: any, b: any) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+      .slice(0, limit)
+      .map((coin: any) => ({
+        symbol: coin.symbol.toUpperCase(),
+        name: coin.name,
+        image: coin.image,
+        price: coin.current_price,
+        change: coin.price_change_24h || 0,
+        changePercent: coin.price_change_percentage_24h || 0,
+        marketCap: coin.market_cap,
+        volume: coin.total_volume,
+      }));
+
     return NextResponse.json(gainers);
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
+  } catch (error) {
+    console.error('[coingecko] gainers error:', error);
+    return NextResponse.json(
+      { error: 'Service temporarily unavailable' },
+      { status: 503 }
+    );
   }
 }

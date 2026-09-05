@@ -64,7 +64,7 @@ const WatchlistPage = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-8">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-100">Watchlist</h1>
         <p className="text-gray-500 mt-1 text-sm">Track the symbols you care about</p>

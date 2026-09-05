@@ -11,7 +11,7 @@ const menuLinks = [
 
 const UserMenu = ({ name, email }: { name: string; email: string }) => {
   return (
-    <div className="relative group">
+    <div className="relative group z-50">
       <button className="cursor-pointer rounded-full ring-2 ring-transparent group-hover:ring-[#3b82f6]/50 transition-all">
         <UserAvatar name={name} />
       </button>

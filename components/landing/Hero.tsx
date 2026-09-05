@@ -96,7 +96,7 @@ const Hero = () => {
           logos={companies}
           speed={80}
           direction="left"
-          logoHeight={32}
+          logoHeight={28}
           gap={48}
           pauseOnHover
           fadeOut

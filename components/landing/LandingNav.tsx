@@ -15,7 +15,7 @@ const LandingNav = ({ user }: { user: CurrentUser | null }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 left-0 right-0 z-50 w-full h-16 flex items-center justify-between px-4 sm:px-6 bg-transparent">
+    <nav className="top-0 left-0 right-0 z-50 w-full h-16 flex items-center justify-between px-4 sm:px-6 bg-transparent">
       <Link
         href="/"
         className="flex cursor-pointer items-center gap-2"
